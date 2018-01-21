@@ -1,0 +1,94 @@
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+<link id="layout" href="layout.css" rel="stylesheet" type="text/css" />
+
+<link href='http://fonts.googleapis.com/css?family=Alegreya+Sans+SC' rel='stylesheet' type='text/css'>
+
+<link href="https://fonts.googleapis.com/css?family=Amatic+SC" rel="stylesheet">
+
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+<script src="jquery.ui.touch-punch.min.js"></script>
+
+<script type="text/javascript" src="game.js"></script>
+
+<title>Amru</title>
+</head>
+<body>
+<div id="DayOfWinter"></div>
+<div id="Tint" class="blurred">
+
+<div id="Inventory">
+	<div id="Rations"></div>
+	<div id="Firewood"></div>	
+</div>
+
+<div id="Time"></div>
+
+<div id="ActionContainers">
+	<div id="HuntContainer" class="action box">
+		<div class="header">Hunt</div>
+		<div class="vr"></div>
+		<div class="hr"></div>
+		<div class="characterIcons">
+			<div class="characterIcon">H</div>
+			<div class="characterIcon">V</div>
+		</div>
+	</div>
+
+	<div id="GatherContainer" class="action box">
+		<div class="header">Gather</div>
+		<div class="vr"></div>
+		<div class="hr"></div>
+		<div class="characterIcons">
+			<div class="characterIcon">R</div>
+		</div>
+	</div>
+
+	<div id="RestContainer" class="action box">
+		<div class="header">Rest</div>
+		<div class="characterIcons">
+			<div class="characterIcon">S</div>
+			<div class="characterIcon">E</div>
+		</div>
+		<img id="Amru" src="amru.svg" />
+	</div>
+</div>
+
+<div id="GroupContainer">
+	<p>If you see this, the game is not working!
+	</p><p>It should work in Chrome, as long as javascript is enabled
+	</p>
+</div>
+
+<div id="InventoryContainer">
+	<div id="InventoryHeader">You have four food rations</div>
+	<div id="InventoryList">
+		<div class="inventory listItem"><span class="name left">Haphor</span><span class="stat middle">hungry</span><span class="button right">give</span><br style="clear: left;" /></div>
+
+		<div class="inventory listItem"><span class="name left">Siri</span><span class="stat middle">fine</span><span class="button right">give</span><br style="clear: left;" /></div>
+
+		<div class="inventory listItem"><span class="name left">Ragvan</span><span class="stat middle">starving</span><span class="button right">give</span><br style="clear: left;" /></div>
+
+		<div class="inventory listItem"><span class="name left">Vaecra</span><span class="stat middle">hungry</span><span class="button right">give</span><br style="clear: left;" /></div>
+
+		<div class="inventory listItem"><span class="name left">Egil</span><span class="stat middle">hungry</span><span class="button right">give</span><br style="clear: left;" /></div>
+	</div> 
+</div>
+
+<div id="EventContainer">
+	<div id="EventContent"></div>
+	<div id="EventChoices"></div> 
+</div>
+
+<img id="Amru" src="amru.svg" />
+<img id="Fire" src="fire-07.png" />
+</div>
+</body>
+</html>
