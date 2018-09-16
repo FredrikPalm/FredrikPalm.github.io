@@ -12,7 +12,7 @@ var year = 0;
 
 function importResources(){
 	importScripts("res/malenames-french.js","res/femalenames-french.js","res/surnames-french.js");
-	importScripts("people.js", "../../scripts/mersenne-random.js","../../scripts/json.js", "aStar.js"); //also aStar, history, events, and whatever else I'd like to share between main program and this
+	importScripts("people.js", "../dep/mersenne-random.js","../dep/json.js", "aStar.js"); //also aStar, history, events, and whatever else I'd like to share between main program and this
 }
 
 onmessage = function(event){
