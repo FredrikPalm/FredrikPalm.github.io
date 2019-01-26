@@ -1,0 +1,400 @@
+body
+{
+	background: #EEE;
+	width: 100%;
+	height: 100%;
+	background-image: url("rockywall3.png");
+	overflow: hidden;
+	margin:0px;
+	-webkit-transition: background 4s ease-in-out;
+	-moz-transition: background 4s ease-in-out;
+	-o-transition: background 4s ease-in-out;
+	transition: background 4s ease-in-out;
+    color: #4c4c4c;
+    background-color: rgba(5, 3, 1, 0.7); 
+    background-blend-mode: multiply;
+}
+
+html, body {
+  overflow:hidden;
+}
+
+.blurred
+{
+	-webkit-filter: blur(10px);
+	-webkit-filter: blur(10px);
+	-moz-filter: blur(10px);
+	-o-filter: blur(10px);
+	filter: blur(10px);
+}
+
+#Tint
+{
+	background: rgb(29, 17, 9, 0.9);
+	width: 100%;
+	height: 100%;
+	-webkit-transition: all 4s ease-in-out;
+	-moz-transition: all 4s ease-in-out;
+	-o-transition: all 4s ease-in-out;
+	transition: all 4s ease-in-out;
+}
+
+*
+{
+	cursor: default;
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none;   /* Chrome/Safari/Opera */
+	-khtml-user-select: none;    /* Konqueror */
+	-moz-user-select: none;      /* Firefox */
+	-ms-user-select: none;       /* Internet Explorer/Edge */
+	user-select: none;
+	-webkit-transition: all 0.5s ease-in-out;
+	-moz-transition: all 0.5s ease-in-out;
+	-o-transition: all 0.5s ease-in-out;
+	transition: all 0.5s ease-in-out;
+}
+
+.ui-draggable-dragging
+{
+	-webkit-transition: none !important;
+	-moz-transition: none !important;
+	-o-transition: none !important;
+	transition: none !important;
+}
+
+.ui-state-active, .ui-droppable-active
+{
+	background: rgba(123,123,123,0.3);
+}
+
+.ui-state-hover, .ui-droppable-hover
+{
+	background: rgba(150,150,159,0.3);
+}
+
+#Amru
+{
+	position: absolute;
+	width: 20%;
+	right: 10%;
+	bottom: 10%;
+}
+.action.box #Amru {
+    right: 5%;
+    top: 5%;
+}
+
+#Fire {
+    width: 15%;
+    right: 30%;
+    position: absolute;
+    bottom: 5%;
+    -webkit-filter: blur(2px);
+    -moz-filter: blur(2px);
+    -o-filter: blur(2px);
+    opacity: 0.0;
+    -webkit-transition: none; 
+    -moz-transition: none;
+    -o-transition: none;
+     transition: none;
+}
+
+#DayOfWinter {
+    font-size: 3em;
+    position: absolute;
+    top: 30%;
+    width: 100%;
+    text-align: center;
+    opacity: 0.0;
+    color: #565656;
+}
+
+#Inventory {
+    position: absolute;
+    right: 2%;
+    top: 1.4%;
+    text-align: center;
+}
+
+#ActionContainers {
+    /* float: right; */
+    /* right: 30%; */
+    /* position: absolute; */
+    /* margin-left: auto; */
+    /* margin-right: auto; */
+    width: 100%;
+    /* align-content: center; */
+    margin: 10px;
+    /* left: 10%; */
+    display: inline-block;
+    /* position: absolute; */
+    white-space: nowrap;
+}
+
+.box {
+    border-radius: 22px;
+    background: rgba(121, 121, 121, 0.04);
+    padding: 10px;
+    width: 150px;
+    height: 135px;
+    display: inline-block;
+    margin: 20px;
+    /* border: thin solid rgba(0, 0, 0, 0.06); */
+    position: relative;
+}
+
+.action.box .content {
+    height: 1px;
+    width: 100%;
+    width: 30%;
+    background-color: rgba(0, 0, 0, 0.22);
+    position: absolute;
+    top: 50%;
+    /* bottom: 40%; */
+    /* left: 150px; */
+    left: 30%;
+}
+
+.characterIcons {
+    width: 100%;
+    height: 80%;
+    z-index: 0;
+}
+
+.action.box .header {
+    width: 50%;
+    text-align: center;
+    /* font-weight: 100; */
+}
+
+.action.box .footer {
+    /* bottom: 10%; */
+    /* position: relative; */
+    width: 100%;
+    text-align: center;
+    font-size: 0.9em;
+    position: relative;
+    /* min-width: 10px; */
+    /* min-height: 10px; */
+    /* top: 80%; */
+    display: inline-block;
+}
+
+.characterIcon:nth-child(4) {
+    top: 50%;
+    left: 60%;
+}
+.characterIcon:nth-child(3) {
+    top: 60%;
+}
+.characterIcon:nth-child(2) {
+    left: 60%;
+}
+
+.characterIcon:nth-child(5) {
+    left: 46%;
+    top: 36%;
+}
+
+.characterIcons #Amru {
+    right: 5%;
+}
+
+.characterIcon {
+    position: absolute;
+    font-size: 2em;
+    top: 22%;
+    z-index: 1;
+    left: 28%;
+    /* right: 25%; */
+    font-family: 'Amacita SC', cursive;
+    color: #525252;
+    display: inline-block;
+    -webkit-transition: all 1.0s ease-in-out;
+    -moz-transition: all 1.0s ease-in-out;
+    -o-transition: all 1.0s ease-in-out;
+    transition: all 1.0s ease-in-out;
+    -webkit-transform: translate3d(0,0,0);
+}
+
+.vr, .hr
+{
+    background-color: rgba(0, 0, 0, 0.17);
+    position: absolute;
+}
+
+.vr {
+    height: 30%;
+    width: 1px;
+    top: 35%;
+    left: 50%;
+}
+
+.hr
+{
+	height: 1px;
+    width: 30%;
+    top: 50%;
+    left: 35%;
+}
+
+#CharacterContainer
+{
+	position: absolute;
+	font-family: "Alegreya Sans SC";
+	right: 5%;
+	top: 10%;
+	/* font-size: 1.1em; */
+	/* margin-left: 10px; */
+	/* margin: 20px; */
+	font-family: Arial;
+	color: #b7b1b1;
+	min-width: 250px;
+	/* position: relative; */
+    display: inline-block;
+    direction: rtl;
+    width: 200px;
+}
+.Avatar
+{
+    margin-bottom: 10px;
+}
+
+.character {
+    /* margin-bottom: 1em; */
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    white-space: nowrap;
+    /* height: 1.0em; */
+}
+
+.character .name {
+	margin-right: 20px;
+}
+
+.charAttribute
+{
+    margin-bottom: 0.5em;
+}
+
+.character .action {
+	float: right;
+}
+
+.character .effect {
+    position: absolute;
+    display: inline-block;
+    left: 0%;
+    text-align: center;
+    width: 100%;
+    padding: 3px;
+    opacity: 0.0;
+}
+
+#EventContainer, #InventoryContainer
+{
+    position: absolute;
+    bottom: 35%;
+    left: 10%;
+    right: 20%;
+    font-family: Arial;
+    font-size: 1.4em;
+    color: #a5a5a5;
+    /*opacity: 0.0;*/
+    /* font-family: "Alegreya Sans SC"; */
+    -webkit-transition: opacity 0.0s ease-in-out;
+	-moz-transition: opacity 0.0s ease-in-out;
+	-o-transition: opacity 0.0s ease-in-out;
+	transition: opacity 0.0s ease-in-out;
+}
+
+#EventChoices, #EventContent
+{
+    opacity: 0.0%;
+}
+
+#EventChoices, #InventoryList
+{
+	margin-top: 2em;
+	max-width: 20em;
+    width: 70%;
+}
+
+.event.choice, .inventory.listItem
+{
+    margin-top: 1.5em;
+    margin-left: 1em;
+    overflow: hidden;
+    font-size: 0.75em;
+    white-space: nowrap;
+}
+
+.inventory.listItem .button:hover, .inventory.listItem .button:active
+{
+	cursor: pointer;
+	color: #d2d2d2;
+	/* padding-left: 2em; */
+	width: 32%;
+	/* text-align: center; */
+}
+
+.inventory.listItem span {
+    width: 33.3333%;
+    display: inline-block;
+}
+
+.inventory.listItem .left {
+
+}
+
+.inventory.listItem .middle {
+	text-align: center;
+}
+
+.inventory.listItem .right {
+	text-align: right;
+}
+
+
+.button:hover
+{
+	cursor: pointer;
+}
+
+.event.choice:hover
+{
+	cursor: pointer;
+	color: #888;
+	padding-left: 0.2em;
+}
+
+.note {
+	color: #6b6a9e;
+}
+
+
+@media screen and (max-height: 800px), screen and (max-width: 800px)
+{	
+	body 
+	{
+		font-size: 65%;
+		overflow: hidden;
+	}
+	#GroupContainer
+	{
+		/* min-width: 130px; */
+		min-width: 20%;
+	}
+	#ActionContainers .action.box
+	{
+		max-width: 22%;
+		max-height: 25%;
+		margin: 2px;
+		padding: 4px;
+	}
+	#EventContainer, #InventoryContainer 
+	{
+	    /* bottom: 10%; */
+	    top: 40%;
+	}
+}
