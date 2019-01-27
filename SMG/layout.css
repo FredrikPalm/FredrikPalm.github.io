@@ -3,7 +3,7 @@ body
 	background: #EEE;
 	width: 100%;
 	height: 100%;
-	background-image: url("rockywall3.png");
+	background-image: url("tex2res4.png");
 	overflow: hidden;
 	margin:0px;
 	-webkit-transition: background 4s ease-in-out;
@@ -11,7 +11,7 @@ body
 	-o-transition: background 4s ease-in-out;
 	transition: background 4s ease-in-out;
     color: #4c4c4c;
-    background-color: rgba(5, 3, 1, 0.7); 
+    background-color: rgba(5, 3, 1, 0.5); 
     background-blend-mode: multiply;
 }
 
@@ -294,7 +294,7 @@ html, body {
 #EventContainer, #InventoryContainer
 {
     position: absolute;
-    bottom: 35%;
+    top: 45%;
     left: 10%;
     right: 20%;
     font-family: Arial;
@@ -324,7 +324,7 @@ html, body {
 {
     margin-top: 1.5em;
     margin-left: 1em;
-    overflow: hidden;
+    /*overflow: hidden;*/
     font-size: 0.75em;
     white-space: nowrap;
 }
@@ -377,8 +377,13 @@ html, body {
 {	
 	body 
 	{
-		font-size: 65%;
+		font-size: 80%;
 		overflow: hidden;
+    }
+    .Avatar
+	{
+		/* min-width: 130px; */
+		width: 8em;
 	}
 	#GroupContainer
 	{
