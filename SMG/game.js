@@ -98,11 +98,9 @@ function Character(name, level, image, actions)
 
 function showFade(text)
 {	
-	$("#Tint").queue(function() {
-	            		$(this).addClass("blurred").dequeue().delay(3000).queue(function() {
+	$("#Tint").addClass("blurred").delay(3000).queue(function() {
 	            			$(this).removeClass("blurred").dequeue();
 	            		});
-	           		});
 	$("#Announce").text(text).fadeTo(1000, 1.0, 
 		function()
 		{
@@ -380,7 +378,7 @@ $(document).ready(function(){
 
 	allies.push(new Character("Sagan May", "Lv 27 Badass", "smg.jpg"));
 
-	showEvent(events.neighbor);
+	showEvent(events.awake);
 });
 
 function buildCharUI(character, type, forBattle, index)
