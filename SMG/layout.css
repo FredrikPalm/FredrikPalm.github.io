@@ -5,7 +5,11 @@ body
 	height: 100%;
 	background-image: url("tex2res4.png");
 	overflow: hidden;
-	margin:0px;
+    margin:0px;
+    -webkit-transition: all 4s ease-in-out;
+	-moz-transition: all 4s ease-in-out;
+	-o-transition: all 4s ease-in-out;
+	transition: all 4s ease-in-out;
 	-webkit-transition: background 4s ease-in-out;
 	-moz-transition: background 4s ease-in-out;
 	-o-transition: background 4s ease-in-out;
@@ -30,7 +34,7 @@ html, body {
 
 #Tint
 {
-	background: rgb(29, 17, 9, 0.9);
+	background: rgb(29, 17, 9, 0.0);
 	width: 100%;
 	height: 100%;
 	-webkit-transition: all 4s ease-in-out;
@@ -72,41 +76,19 @@ html, body {
 	background: rgba(150,150,159,0.3);
 }
 
-#Amru
-{
-	position: absolute;
-	width: 20%;
-	right: 10%;
-	bottom: 10%;
-}
 .action.box #Amru {
     right: 5%;
     top: 5%;
 }
 
-#Fire {
-    width: 15%;
-    right: 30%;
-    position: absolute;
-    bottom: 5%;
-    -webkit-filter: blur(2px);
-    -moz-filter: blur(2px);
-    -o-filter: blur(2px);
-    opacity: 0.0;
-    -webkit-transition: none; 
-    -moz-transition: none;
-    -o-transition: none;
-     transition: none;
-}
-
-#DayOfWinter {
+#Announce {
     font-size: 3em;
     position: absolute;
     top: 30%;
     width: 100%;
     text-align: center;
     opacity: 0.0;
-    color: #565656;
+    color: #f01255;
 }
 
 #Inventory {
@@ -114,6 +96,30 @@ html, body {
     right: 2%;
     top: 1.4%;
     text-align: center;
+}
+
+.attribute{
+    color: #99d0d0;
+    font-family: Roboto;
+}
+
+.hidden
+{
+    display: none !important;
+}
+
+.levelup
+{
+    color: aqua;
+    font-family: Roboto;
+    font-size: 110%;
+}
+
+.skillpoint
+{
+    color: #44b7b7;
+    font-family: Roboto;
+    font-size: 80%;
 }
 
 #ActionContainers {
@@ -217,6 +223,18 @@ html, body {
     -webkit-transform: translate3d(0,0,0);
 }
 
+#BattleActions
+{
+    position: absolute;
+    top: 50%;
+    left: 20%;
+}
+
+.button:hover
+{
+    text-decoration:underline;
+}
+
 .vr, .hr
 {
     background-color: rgba(0, 0, 0, 0.17);
@@ -238,26 +256,84 @@ html, body {
     left: 35%;
 }
 
+.shake{
+    animation: shake 0.75s; 
+  /* When the animation is finished, start again */
+    animation-iteration-count: infinite; 
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+  }
+
 #CharacterContainer
 {
 	position: absolute;
 	font-family: "Alegreya Sans SC";
 	right: 5%;
-	top: 10%;
+	top: 5%;
 	/* font-size: 1.1em; */
 	/* margin-left: 10px; */
 	/* margin: 20px; */
 	font-family: Arial;
 	color: #b7b1b1;
-	min-width: 250px;
+	/*min-width: 250px;*/
 	/* position: relative; */
     display: inline-block;
     direction: rtl;
-    width: 200px;
+    /*width: 200px;*/
 }
-.Avatar
+
+#BattleContainer {
+    font-family: Arial;
+    font-size: 1em;
+    color: #a5a5a5;
+}
+
+#Allies {
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    top: 20%;
+    left: 10%;
+}
+
+#Enemies {
+    width: 50%;
+    position: absolute;
+    left: 50%;
+    top: 20%;
+}
+
+.charHealth
 {
-    margin-bottom: 10px;
+    background-color: #ec4242;
+    width: 7em;
+}
+
+.charStamina
+{
+    background-color: #4ac342;
+    width: 7em;
+}
+
+.charAttribute:nth-of-type(1)
+{
+    margin-top: 10px;
+}
+
+#Allies .Avatar {
+    width: 7em;
 }
 
 .character {
@@ -294,7 +370,7 @@ html, body {
 #EventContainer, #InventoryContainer
 {
     position: absolute;
-    top: 45%;
+    /*top: 45%;*/
     left: 10%;
     right: 20%;
     font-family: Arial;
@@ -305,7 +381,19 @@ html, body {
     -webkit-transition: opacity 0.0s ease-in-out;
 	-moz-transition: opacity 0.0s ease-in-out;
 	-o-transition: opacity 0.0s ease-in-out;
-	transition: opacity 0.0s ease-in-out;
+    transition: opacity 0.0s ease-in-out;
+    height: 100%;
+}
+
+#EventContent
+{
+    bottom: 50%;
+    position: absolute;
+}
+#EventChoices
+{
+    top: 50%;
+    position: absolute;
 }
 
 #EventChoices, #EventContent
@@ -369,7 +457,23 @@ html, body {
 }
 
 .note {
-	color: #6b6a9e;
+	color: #16b134;
+}
+
+.note:nth-of-type(2) {
+	color: #bf662a !important;
+}
+
+.note:nth-of-type(3) {
+	color: #15afa2 !important;
+}
+
+.note:nth-of-type(4) {
+	color: #8f10a0 !important;
+}
+
+.note:nth-of-type(5) {
+	color: #bec03d !important;
 }
 
 
@@ -399,7 +503,10 @@ html, body {
 	}
 	#EventContainer, #InventoryContainer 
 	{
-	    /* bottom: 10%; */
-	    top: 40%;
+        /* bottom: 10%; */
+    }
+    #EventContent 
+	{
+	    font-size: 70%;
 	}
 }
