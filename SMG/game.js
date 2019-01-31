@@ -680,7 +680,7 @@ $(document).ready(function(){
 
 	$("#Tint").removeClass("blurred");
 
-	sagan = new Character("Sagan May", "Lv 27 Badass", "sagan2.png", [ makePunchAttack(), makeKickAttack(), makeHeadButtAttack(), makeProtect() ]);
+	sagan = new Character("Sagan May", "Lv 27 Badass", "sagan2.jpg", [ makePunchAttack(), makeKickAttack(), makeHeadButtAttack(), makeProtect() ]);
 	kelli = makeKelli();
 	
 	allies.push(sagan);
