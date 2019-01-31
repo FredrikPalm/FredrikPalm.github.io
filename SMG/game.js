@@ -80,11 +80,12 @@ function pulse(i, freq, min, max)
 var allies = [];
 var enemies = [];
 
-function Action(name, damage, cost)
+function Action(name, damage, cost, cond)
 {
 	this.name = name;
 	this.damage = damage;
 	this.cost = cost;
+	this.condition = cond;
 }
 
 function Character(name, level, image, actions)
@@ -92,6 +93,12 @@ function Character(name, level, image, actions)
 	this.name = name;
 	this.image = image;
 	this.level = level;
+	
+	this.fullHealth = 100;
+	this.health = this.fullHealth;
+	
+	this.fullStamina = 100;
+	this.stamina = this.fullStamina;
 
 	this.actions = (actions) ? actions : [ new Action("Attack", 10, 10) ];
 }
@@ -190,11 +197,20 @@ function descChoice(text, description, c)
 	return new Choice(text, function(){ return showEvent(new Event(description)); }, c);
 }
 
+function descJumpChoice(text, description, next, c)
+{
+	return new Choice(text, function(){ return showEvent(nEvent(description, next)); }, c);
+}
+
 /*
 	Saturday, February 2nd
 
 
 */
+
+var sagan = {};
+var kelli = {};
+var isaac = {};
 
 var battle = false;
 var snoozed = false;
@@ -211,7 +227,9 @@ var sleptExtra = false;
 var leveled = false;
 var kelliJoined = false;
 var isaacJoined = false;
-
+var hasWeapon = false;
+var hasRock = false;
+var hasShovel = false;
 var secretMode = true;
 
 function makeAwake()
@@ -239,6 +257,13 @@ function makeGetup()
 function startBattle(encounter)
 {
 	battle = true;
+	battleDone = false;
+	currentCharacter = undefined;
+	lastCharacter = undefined;
+	lastAction = undefined;
+	battleOrder = 0;
+	lastCharacterParty = [ undefined, undefined ];
+
 	var text = (enemies.length == 1) ? enemies[0].name : "Bad Guys";
 	if(encounter) text = encounter;
 	showFade("Sagan May vs " + text);
@@ -259,7 +284,106 @@ function battleEvent(enemies_, success, fail, encounter)
 		battleScenario.success = success;
 		battleScenario.fail = fail;
 		startBattle(encounter);
-	});
+	}).battle();
+}
+
+function makeZombieAttack()
+{
+	var a = new Action("Attack", 10, 10);
+	a.hitText = function(src, dst, damage){
+		return src.name + " flails wildly at " + dst.name + " and does " + damage + " damage";
+	};
+
+	a.missText = function(src, dst){
+		return src.name + " flails aimlessly towards " + dst.name + " but misses";
+	};
+
+	a.critText = function(src, dst, damage){
+		return src.name + " lands a cruching blow on " + dst.name + " and does " + damage + " damage";
+	};
+
+	a.hitChance = function(src, dst){
+		return 0.8;
+	};
+
+	a.critChance = function(src, dst){
+		return 0.05;
+	};
+
+	return a;
+}
+
+function makeRockAttack()
+{
+	var a = new Action("Throw Rock", 20, 5);
+	a.hitText = function(src, dst, damage){
+		return src.name + " throws the rock and hits " + dst.name + " in the gut doing " + damage + " damage";
+	};
+
+	a.missText = function(src, dst){
+		return src.name + " aims bravely but misses " + dst.name + " completely";
+	};
+
+	a.critText = function(src, dst, damage){
+		return src.name + " throws perfectly and hits " + dst.name + " right in the face doing " + damage + " damage";
+	};
+
+	a.hitChance = function(src, dst){
+		return 0.5;
+	};
+
+	a.critChance = function(src, dst){
+		return 0.2;
+	};
+
+	a.effect = function(src, dst){
+		for(var i = 0; i < src.actions.length; i++){
+			if(src.actions[i] == a){
+				src.actions.splice(i, 1);
+				return "You threw the rock and can't get it back";
+			}
+		}
+		return "";
+	};
+
+	return a;
+}
+
+function makeShovelAttack()
+{
+	var a = new Action("Hit with Shovel", 15, 10);
+	a.hitText = function(src, dst, damage){
+		return src.name + " swings the shovel wildly at " + dst.name + " and does " + damage + " damage";
+	};
+
+	a.missText = function(src, dst){
+		return src.name + " misses " + dst.name + " with the shovel";
+	};
+
+	a.critText = function(src, dst, damage){
+		return src.name + " hits " + dst.name + " in the head with a heavy blow doing " + damage + " damage";
+	};
+
+	a.hitChance = function(src, dst){
+		return 0.8;
+	};
+
+	a.critChance = function(src, dst){
+		return 0.2;
+	};
+
+	a.effect = function(src, dst){
+		if(random(0.0, 1.0) > 0.05) return "";
+		for(var i = 0; i < src.actions.length; i++){
+			if(src.actions[i] == a){
+				src.actions.splice(i, 1);
+				return "The shovel broke!";
+			}
+		}
+		return "";
+	};
+
+	return a;
 }
 
 var events = {
@@ -294,15 +418,15 @@ var events = {
 	shelf: nEvent("You put the book on the shelf, right next to the Ollivander's wand box", "getup").effect(function(){ bookOnFloor = false }),
 	phone: dEvent("You pick up your OnePlus, never fully over the loss of the once great Blackberry\nNo internet access\n"),
 	dresser: dEvent("You go to the mirror to get dressed\nA bronze haired goddess looks back at you", 
-	[descChoice("Put on a bra", "You pick one of the less sucky bras and strap on, one boob at a time\nGoodbye glorious freedom", function(){ return !braOn && !shirtOn; }).effect(function(){ braOn = true; }), descChoice("Put on a T-shirt", "Time to make America emo again.. again", function(){ return !shirtOn; }).effect(function(){ shirtOn = true; }), descChoice("Put on pants", "<i>Squuuuuueeeeze</i>. Damn is that a fine butt", function(){ return !pantsOn; }).effect(function(){ pantsOn = true; }), jumpChoice("Looking good", "clothed", function(){ return pantsOn && shirtOn; })]).effect(function(){ clothed = true; }),
+	[descChoice("Put on a bra [Comfort - 5]", "You pick one of the less sucky bras and strap on\nOne boob at a time\nGoodbye glorious freedom", function(){ return !braOn && !shirtOn; }).effect(function(){ braOn = true; }), descChoice("Put on a T-shirt [Coolness + 3]", "Time to make America emo again.. again", function(){ return !shirtOn; }).effect(function(){ shirtOn = true; }), descChoice("Put on pants [Craziness - 10]", "<i>Squuuuuueeeeze</i>. Damn is that a fine butt", function(){ return !pantsOn; }).effect(function(){ pantsOn = true; }), jumpChoice("Looking good", "clothed", function(){ return pantsOn && shirtOn; })]).effect(function(){ clothed = true; }),
 	clothed: nEvent(function(){ if(braOn) return "Looking sweet"; return "Looking sweet, and who needs a bra anyway"}, "getup"),
 	
 	//house
 	house: dEvent("You head out of your room. Your parents' door is open and no one's there\nKelli's room is vacant aside from the bloodlusting Raskolnikov\nNo one's to be seen in the main area. It's very quiet\n<i>Praaaaaise</i>", 
-	[ descChoice("Get some breakfast. <i>Mmm</i>", "Yum"), descChoice("Let's restart that router", "<i>Click</i>. <i>Click</i>\nNope, still nothing"), descChoice("Let's see if there's anything on the TV", "Static. Fuuuuck that's <i>weird</i>"), descChoice("Let's just chill for a bit", "You lay down on the couch, pull the blanket up. It's comfy\nYou could sleep like this"), jumpChoice("Go back to your room", "getup"), jumpChoice("Go outside", "outsideZombie")]).effect(function(){ checkedNooneHome = true; }),
+	[ descChoice("Get some breakfast. <i>Mmm</i>", "Yum"), descChoice("Let's restart that router", "<i>Click</i>. <i>Click</i>\nNope, still nothing"), descChoice("Let's see if there's anything on the TV", "Static. Fuuuuck that's <i>weird</i>"), descChoice("Let's just chill for a bit", "You lay down on the couch, pull the blanket up. It's comfy\nYou could sleep like this"), jumpChoice("Go back to your room", "getup"), jumpChoice("Go outside", "outside")]).effect(function(){ checkedNooneHome = true; }),
 
 	//outside
-	outsideZombie: dEvent("You go out into the cold *outside*\nYour trusty *Saab* stands parked in its usual spot\nBehind it, you notice your *neighbor* standing still just looking at you\nWhy is he always creepy?\nOn a closer look, you realize there's something off", [
+	outside: dEvent("You go out into the cold *outside*\nYour trusty *Saab* stands parked in its usual spot\nBehind it, you notice your *neighbor* standing still just looking at you\nWhy is he always creepy?\nOn a closer look, you realize there's something off", [
 		jumpChoice("Ignore the creep and get in the Saab", "saabFail"),
 		jumpChoice("Go talk to your neighbor, see if he knows what's up", "neighbor")	
 	]),
@@ -314,25 +438,56 @@ var events = {
 	]).effect(function(){ checkedCar = true; }), 
 	carHood: dEvent("You get out of the car and glance at the *neighbor* just standing there like a zombie. Creep\nYou walk around and open the hood. Your hands are freezing\nIt's pretty clear the *battery* is dead\nYou could jump-start it with another *car*", [
 		jumpChoice("Ask your neighbor", "askNeighborHelp"),
-		descChoice("Check if there's another option in the garage", "Nope. Fuck"),
+		descChoice("Check if there's another option in the garage", "Nope\nNo cars there, everyone's out\nNothing else helpful either\nFuck"),
 	]),
 
 	//neighbor
 	askNeighborHelp: nEvent("As much as you hate asking for help, it's probably your best option right now", "neighbor"),
 	neighbor: dEvent("You walk up to the neighbor\nAs you get closer, your start feeling very uncomfortable\nSomething is wrong", [
 		jumpChoice("There's only one way to find out..", "neighbor2"),
-		jumpChoice("Actually, no. Fuck that", "outsideZombie", function(){ return !checkedCar})
+		jumpChoice("Actually, no. Fuck that", "outside", function(){ return !checkedCar})
 	]),
 	neighbor2: dEvent("As you walk closer, you notice weird gray sludge in the snow behind him\nHe's mostly standing still with his arms in an unnatural position\nHe's an odd bluish gray color\nHis mouth is hanging open\nYup. That's a creepy zombie neighbor", [
-		jumpChoice("Fight", "fightNeighbor"),
+		descJumpChoice("<i>Are you okay?</i>", "<i>#Uuhhuhuuuhhhuuuhhhuuu#</i>", "neighbor3"),
 		jumpChoice("Fuck that. Get out of there. Nope", "neighbor3"),
+	]),
+	neighbor3: dEvent("Okay, he's a zombie but at least he's just sort of standing there\nYou really need to get out of here and find your people fast\nYour car doesn't work\nYour phone doesn't work", [
+		jumpChoice("I need something to protect myself", "protect", function(){ return !hasWeapon; }),
+		jumpChoice("I need to jump-start my car", "carOptions"),
+		jumpChoice("Run past him and check if anyone else is inside the house", "runToNeighborHouse"),
+	]),
+	protect: dEvent("You look around but only spot a rock and a shovel sticking out of the snow", [
+		descChoice("The rock seems good", "You pick up the rock", function(){ return !hasRock; }).effect(function(){
+			hasRock = true;
+			hasWeapon = true;
+			allies[0].actions.push(makeRockAttack());
+		}),
+		descChoice("I'll get the shovel", "You pick up the shovel", function(){ return !hasShovel; }).effect(function(){
+			hasShovel = true;
+			hasWeapon = true;
+			allies[0].actions.push(makeShovelAttack());
+		}),
+		jumpChoice("Okay, let's do some damage. Sorry neighbor", "fightNeighbor"),
+		jumpChoice("Okay, now let's check the house", "runToNeighborHouse"),
+	]),
+	carOptions: dEvent("You need to use his car to start yours. He might have a key", [
+		jumpChoice("If only I had something to hit him with..", "protect"),
+		jumpChoice("Check his house. I can run past him", "runToNeighborHouse")
+	]),
+	runToNeighborHouse: dEvent("You dart past the creepy neighbor\nYou feel a shill down your spine as he turns\nYou reach the house and panic as he approaches from behind\nYou knock and yell\nNo response\nYou turn\nHe's right there staring at you", [
+		jumpChoice("Fight him off", "fightNeighbor"),
 	]),
 	fightNeighbor: battleEvent([ new Character("Creepy Neighbor", "Lv 1 Zombie")], "fightSuccess", "fightFail"),
 	fightSuccess: dEvent("His head falls off\n!What! !The! !Fuck!\n<i>This is fucked up</i>", [
-
+		descChoice("Scream", "!Auahahahah!").effect(function(){ if(cryCount == undefined) cryCount = 0; cryCount++; if(cryCount > 2) jumpTo("neighborCleanup"); }),
+		descChoice("Laugh", "!Auahahahah!").effect(function(){ if(cryCount == undefined) cryCount = 0; cryCount++; if(cryCount > 2) jumpTo("neighborCleanup"); }),
+		descChoice("Cry", "!Auahahahah!").effect(function(){ if(cryCount == undefined) cryCount = 0; cryCount++; if(cryCount > 2) jumpTo("neighborCleanup"); }),
 	]),
 	fightFail: dEvent("You fall", [
 
+	]),
+	neighborCleanup: dEvent("You look at the beheaded corpse\n", [
+		descChoice("Temp"),
 	]),
 
 	saabGood: dEvent("Like a true Swede, the loyal Saab can always be trusted\nExcept when it has a breakdown\nBut now it's back up and ready to go!", [
@@ -351,9 +506,15 @@ var events = {
 	reccenter2: dEvent("You hear the glorious sound of a laugh that could only belong to Kelli\nWhere is she? She must be close", 
 	[jumpChoice("Follow the laugh", "reccenter3")]),
 	reccenter3: dEvent("<i>Hooooooly shit</i>\nYou can't believe what you're seeing\nThe ice rink is covered in blood\nA figure is skating around with a baseball bat in hand, acrobatically dancing around dodging and beating the crap out of zombies\n<i>Eat shit you fuuuckers!</i>", [ jumpChoice("<i>!KELLIIIIIII!!!!!</i>", "kelli")]),
-	kelli: dEvent("<i>Hey Sagan!</i>\n<i>I'm a warrior now</i>\nShe swings the bat at a zombie and its head goes flying\n", [ jumpChoice("<i>!KELLIIIIIII!!!!!</i>", "kelli2")]),
-
-
+	kelli: dEvent("<i>Hey Sagan!</i>\n<i>I'm a warrior now</i>\nShe swings the bat at a zombie and its head goes flying\n<i>Let's kick some zombie butt</i>", [ jumpChoice("<i>!KEEEEELLIIIIIII!!!!!</i>", "kelli2")]).effect(function(){
+		allies.push(kelli);
+	}),
+	kelli2: battleEvent([ new Character("Zombie", "Lv 5 Zombie"), new Character("Zombie", "Lv 3 Zombie"), new Character("Zombie", "Lv 3 Zombie"), new Character("Zombie", "Lv 1 Zombie"), new Character("Zombie", "Lv 3 Zombie") ], "kelliFightWin", "kelliFightFail", "Zombie Horde"),
+	kelliFightWin: dEvent("<i>Wooo</i>", [
+		descChoice("Hey"),
+		descChoice("<i>Hug</i>"),
+	]),
+	kelliFightFail: dEvent(""),
 
 	/*
 		Kelli at the Rec Center
@@ -363,6 +524,149 @@ var events = {
 
 
 };
+
+function makePunchAttack()
+{
+	var a = new Action("Punch", 5, 5);
+	a.hitText = function(src, dst, damage){
+		return src.name + " punches " + dst.name + " in the jaw and does " + damage + " damage";
+	};
+
+	a.missText = function(src, dst){
+		return src.name + " tries to hit " + dst.name + " but misses";
+	};
+
+	a.critText = function(src, dst, damage){
+		return src.name + " strikes " + dst.name + " square in the face with a heavy blow dealing " + damage + " damage";
+	};
+
+	a.hitChance = function(src, dst){
+		return 0.95;
+	};
+
+	a.critChance = function(src, dst){
+		return 0.1;
+	};
+
+	a.effect = function(src, dst){
+		return "";
+	};
+
+	return a;
+}
+
+function makeKickAttack()
+{
+	var a = new Action("Kick", 10, 10);
+	a.hitText = function(src, dst, damage){
+		return src.name + " kicks " + dst.name + "  " + damage + " damage";
+	};
+
+	a.missText = function(src, dst){
+		return src.name + " swings a leg at " + dst.name + " but misses ungracefully";
+	};
+
+	a.critText = function(src, dst, damage){
+		return src.name + " kicks " + dst.name + " with remarkable force dealing " + damage + " damage";
+	};
+
+	a.hitChance = function(src, dst){
+		return 0.8;
+	};
+
+	a.critChance = function(src, dst){
+		return 0.2;
+	};
+
+	a.effect = function(src, dst){
+		return "";
+	};
+
+	return a;
+}
+
+function makeHeadButtAttack()
+{
+	var a = new Action("Headbutt", 25, 10);
+	a.hitText = function(src, dst, damage){
+		return src.name + " headbutts " + dst.name + " hard doing " + damage + " damage";
+	};
+
+	a.missText = function(src, dst){
+		return "";
+	};
+
+	a.critText = function(src, dst, damage){
+		return src.name + " headbutts " + dst.name + " so hard parts are sent flying doing " + damage + " damage";
+	};
+
+	a.hitChance = function(src, dst){
+		return 1.0;
+	};
+
+	a.critChance = function(src, dst){
+		return 0.25;
+	};
+
+	a.effect = function(src, dst){
+		return "";
+	};
+
+	a.condition = function(src, dst){
+		return src.rage;
+	};
+
+	return a;
+}
+
+
+function makeProtect()
+{
+	var a = new Action("Defend", -1, 0);
+	a.hitText = function(src, dst, damage){
+		return src.name + " kicks " + dst.name + "  " + damage + " damage";
+	};
+
+	a.missText = function(src, dst){
+		return src.name + " swings a leg at " + dst.name + " but misses ungracefully";
+	};
+
+	a.critText = function(src, dst, damage){
+		return src.name + " kicks " + dst.name + " with remarkable force dealing " + damage + " damage";
+	};
+
+	a.hitChance = function(src, dst){
+		return 0.8;
+	};
+
+	a.critChance = function(src, dst){
+		return 0.2;
+	};
+
+	a.effect = function(src, dst){
+		return "";
+	};
+
+	return a;
+}
+
+function makeKelli()
+{
+	var skateSlash = new Action("Skate Slash", 30, 10);
+	var skateDodge = new Action("Skate Dodge", 0, 10);
+	var kelli = new Character("Kelli", "Lv 20 Warrior", "kelli.png", [ skateSlash, skateDodge ]);
+	kelli.fullHealth = 80;
+	kelli.health = 50;
+	return kelli;
+}
+
+function makeIsaac()
+{
+	var wrenchStrike = new Action("Wrench Strike", 30, 10);
+	var skateDodge = new Action("", 0, 10);
+	var isaac = new Character("Isaac", "Lv 26 Nerd", "isaac.png", [ wrenchStrike, skateDodge ]);
+	return isaac;
+}
 
 $(document).ready(function(){
 	setInterval(tick, 10);
@@ -374,11 +678,21 @@ $(document).ready(function(){
 	  }
 	);
 
-	$("body").removeClass("blurred");
+	$("#Tint").removeClass("blurred");
 
-	allies.push(new Character("Sagan May", "Lv 27 Badass", "smg.jpg"));
+	sagan = new Character("Sagan May", "Lv 27 Badass", "sagan2.png", [ makePunchAttack(), makeKickAttack(), makeHeadButtAttack(), makeProtect() ]);
+	kelli = makeKelli();
+	
+	allies.push(sagan);
+	
 
-	showEvent(events.awake);
+	var hash = (window.location.hash) ? window.location.hash.substr(1) : "";
+	if(window.location.hash && events[hash]){
+		gotup = true;
+		showEvent(events[hash]);
+	}
+	else 
+		showEvent(events.awake);
 });
 
 function buildCharUI(character, type, forBattle, index)
@@ -388,13 +702,13 @@ function buildCharUI(character, type, forBattle, index)
 	var level = "<div class='charAttribute'>"+ character.level +"</div>";
 	var health = "<div class='charHealth'>"+ "&nbsp;" +"</div>";
 	var stamina = "<div class='charStamina'>"+ "&nbsp;" +"</div>";
-	var id = "Char" + index;
+	var id = "Char" + type + index;
 	if(!character.image && forBattle){
 		//name before health
-		return $("<div id='"+id+"' class='"+type+"'>" + name + level + health + stamina + "</div>");
+		return $("<div id='"+id+"' class='"+type+"'>" + name + level + health + stamina + "</div>").click(function(){ selectedTarget = character; });
 	}
 	if(forBattle)
-		return $("<div id='"+id+"' class='"+type+"'>" + img + health + stamina + name + level + "</div>");
+		return $("<div id='"+id+"' class='"+type+"'>" + img + health + stamina + name + level + "</div>").click(function(){ selectedTarget = character; });
 	return $("<div class='"+type+"'>" + img + name + level + "</div>");
 }
 
@@ -412,49 +726,283 @@ function startBattleUI()
 	for(var i = 0; i < enemies.length; i++){
 		enemyContainer.append(buildCharUI(enemies[i], "enemy", true, i));
 	}
-
-	if(enemies.length == 0){
-		battle = false;
-	}
 }
 
 var currentCharacter;
 var lastCharacter;
 
+var battleState = 0;
+var selectedAction;
+var selectedTarget;
+var lastAction;
+
 function makeAction(action){
-	return $("<div></div>").addClass("button", "actionButton").text(action.name);
+	return $("<span></span>").addClass("button").addClass("actionButton").text(action.name).click(function(){
+		if(!battle || battleDone) return;
+		battleState = 1;
+		selectedAction = action;
+		selectedTarget = undefined;
+	});
+}
+
+function makeTarget(target){
+	return $("<span></span>").addClass("button").addClass("targetButton").text(target.name).click(function(){
+		if(!battle || battleDone) return;
+		selectedTarget = target;
+	});
+}
+
+function showBattleInfo(message, ally, hit, crit)
+{
+	if(!message || message.length <= 0) return;
+	var previous = $(".battlePrompt");
+	var top = "50%";
+	if(previous.length != 0){
+		var y = window.innerHeight * 0.5;
+		var lastPos = previous.last().position().top;
+		if(lastPos - y < 50)
+			top = lastPos + 50;
+	}
+
+	var div = $("<div>").addClass("battlePrompt").text(message);
+	div.addClass((ally)?"allyAction":"enemyAction");
+	div.addClass((hit)?"hit":"miss");
+	if(crit)div.addClass("crit");
+	$("#BattlePrompts").append(div);
+	div.css({position:"absolute","top":top,left:"50%",width:"100%","margin-left":"-50%"});
+	div.animate({
+		top: "-=50px",
+	}, 2000, function(){
+	div[0].parentElement.removeChild(div[0]);	 
+	}).fadeTo(2000, 0.0);
+}
+
+function runAction(character, action, target)
+{
+	if(!battle || battleDone) return;
+	var chance = 1.0;
+	if(action.hitChance) chance = action.hitChance(character, target);
+	var hit = random(0.0, 1.0) < chance;
+	var crit = hit && action.critChance && random(0.0, 1.0) < action.critChance(character, target);
+	if(hit){
+		var damage = action.damage * random(0.8, 1.2);
+		if(!!character.rage) damage *= random(2.0, 3.0);
+		if(crit) damage *= random(1.5,2.5);
+		damage = Math.round(damage);
+		var fallback = character.name + " hits " + target.name + " with " + action.name + " for " + damage; 
+		var fn = (crit && action.critText) ? action.critText : action.hitText;
+		var message = (fn) ? fn(character, target, damage) : fallback;
+		target.health -= damage;
+		showBattleInfo(message, true, true, crit);
+	}
+	else{
+		var fallback = character.name + " misses " + target.name + " with " + action.name;
+		var message = (action.missText) ? action.missText(character, target) : fallback;
+		showBattleInfo(message, true, false, false);
+	}
+
+	if(action.effect){ 
+		var message = action.effect(character, target); 
+		if(message && message.length > 0)
+			showBattleInfo(message, true, false, false);
+	}
+
+	if(action.cost) character.stamina -= action.cost
+	if(character.stamina < 0) character.stamina = 0;
+
+	battleState = 2;
+}
+
+var battleDone = false;
+var battleOrder = 0;
+var lastCharacterParty = [undefined, undefined];
+
+function pickBestAction(enemy)
+{
+	var bestScore = -1;
+	var bestAction;
+	var bestTarget;
+	for(var i = 0; i < enemy.actions.length; i++){
+		var action = enemy.actions[i];
+		var targets = (action.damage > 0) ? allies : enemies;
+		for(var j = 0; j < targets.length; j++){
+			if(targets[j].health <= 0) continue;
+			if(action.condition && !action.condition(enemy, targets[j])) continue;
+			var score = random(0.0, 1.0);
+			if(score > bestScore){
+				bestScore = score;
+				bestAction = action;
+				bestTarget = targets[j];
+			}
+		}
+	}
+	runAction(enemy, bestAction, bestTarget);
 }
 
 function updateBattleUI()
 {	
-	if(!currentCharacter) currentCharacter = allies[0];
-	var characterChanged = currentCharacter != lastCharacter;
-	lastCharacter = currentCharacter;
-	if(characterChanged)
-		$("#BattleActions").empty();
+	if(battleDone) return;
+	if(!currentCharacter) { 
+		currentCharacter = allies[0];
+		lastCharacterParty[0] = currentCharacter;
+	}
 
-	for(var i = 0; i < allies.length; i++){
-		var ally = allies[i];
-		if(ally == currentCharacter){
-			//some indicator
-			//update the actions
-			if(characterChanged){
-				for(var j = 0; j < ally.actions.length; j++){
-					$("#BattleActions").append(makeAction(ally.actions[j]));
-				}
+	var rage = kelli.health < kelli.fullHealth / 2;
+	if(rage && !sagan.rage){
+		showBattleInfo("Sagan goes into rage mode to protect Kelli");
+	}
+	sagan.rage = rage;
+
+	if(battleState == 2){
+		for(var s = 0; s < 2; s++){
+			var list = (s == 0) ? allies : enemies;
+			for(var i = 0; i < list.length; i++){
+				list[i].stamina += 2;
+				if(list[i].stamina > list[i].fullStamina)
+					list[i].stamina = list[i].fullStamina;
 			}
 		}
 
-		var c = $("#Char" + i);
+		battleOrder = (battleOrder + 1) % 2;
+		var set = (battleOrder == 0) ? allies : enemies;
+
+		var pickNext = lastCharacterParty[battleOrder] == undefined;
+		for(var i = 0; i <= set.length * 3; i++){
+			var char = set[i % set.length];
+			if(char.health <= 0) continue;
+			if(pickNext) { currentCharacter = char; break; }
+			if(char == lastCharacterParty[battleOrder]){
+				pickNext = true;
+			}
+		}
+		if(currentCharacter == lastCharacter){
+			currentCharacter = undefined;
+		}
+
+		lastCharacterParty[battleOrder] = currentCharacter;
+
+		battleState == 0;
+		if(battleOrder == 1){
+			setTimeout(function(){
+				pickBestAction(currentCharacter);
+			}, 1000);
+		}
+	}
+
+	var characterChanged = currentCharacter != lastCharacter;
+	lastCharacter = currentCharacter;
+
+	var actionChanged = characterChanged || selectedAction != lastAction;
+	lastAction = selectedAction;
+
+	if(characterChanged){
+		$("#BattleActions").empty();
+	}
+	if(actionChanged){
+		$("#BattleTargets").empty();
+	}
+
+	if(selectedAction === undefined) { battleState = 0; selectedTarget = undefined; }
+	if(battleState == 1){
+		if(selectedAction.damage > 0){
+			if(enemies.length <= 1){
+				selectedTarget = enemies[0];
+			}
+		}
+		
+		if(selectedTarget !== undefined){
+			runAction(currentCharacter, selectedAction, selectedTarget);
+			selectedAction = undefined;
+			selectedTarget = undefined;
+		}
+	}
+
+	var toPercentage = function(v)
+	{
+		return (v * 100) + "%";
+	};
+
+	var alliesLeft = 0;
+	var indicatorPos;
+	for(var i = 0; i < allies.length; i++){
+		var c = $("#Charally" + i);
+		var ally = allies[i];
+		if(ally.health > 0) alliesLeft++;
+		if(ally == currentCharacter){			
+			indicatorPos = c.position();
+			indicatorPos.top += c.height() / 2;
+			indicatorPos.left -= 10;
+			//update the actions
+			if(characterChanged){
+				for(var j = 0; j < ally.actions.length; j++){
+					if(ally.actions[j].condition && !ally.actions[j].condition(ally)) continue;
+					$("#BattleActions").append(makeAction(ally.actions[j]));
+				}
+			}
+			if(actionChanged && selectedAction !== undefined){
+				var set = (selectedAction.damage > 0) ? enemies : allies;
+				for(var j = 0; j < set.length; j++){
+					if(set[j].health <= 0) continue;
+					$("#BattleTargets").append(makeTarget(set[j]));
+				}
+			}
+		}
 		if(c.length == 0) continue;
-	}
+		c.find(".charHealth").width(toPercentage(ally.health/ally.fullHealth));
+		var stamina = c.find(".charStamina");
+		var hasRage = stamina.hasClass("rage");
+		var staminaVal = ally.stamina;
+		if((!!ally.rage) != hasRage){
+			stamina.text((rage) ? "RAGE" : "&nbsp;");
+			stamina.toggleClass("shake").toggleClass("rage");	
+		}
+		if(ally.rage) staminaVal = ally.fullStamina;
 
+		stamina.width(toPercentage((ally.health == 0) ? 0 : staminaVal/ally.fullStamina));
+	}
+	var enemiesLeft = 0;
 	for(var i = 0; i < enemies.length; i++){
-
+		var enemy = enemies[i];
+		var c = $("#Charenemy" + i);
+		if(enemy == currentCharacter){
+			indicatorPos = c.position();
+			indicatorPos.top += c.height() / 2;
+			indicatorPos.left += c.width() + 25;
+		}
+		if(c.length == 0) continue;
+		if(enemy.health > 0) enemiesLeft++;
+		c.find(".charHealth").width(toPercentage(enemy.health/enemy.fullHealth));
+		c.find(".charStamina").width(toPercentage((enemy.health <= 0) ? 0 : enemy.stamina/enemy.fullStamina));
 	}
 
-	if(enemies.length == 0){
-		battle = false;
+	if(characterChanged){
+		$("#BattleIndicator").css(indicatorPos);
+	}
+
+	if(alliesLeft == 0){
+		battleDone = true;
+		setTimeout(function(){
+			battle = false;
+			$.each(allies, function(i, ally){
+				ally.health = ally.fullHealth;
+				ally.stamina = ally.fullStamina;
+			});
+
+			showEvent(events[battleScenario.fail]);
+		}, 1000);
+	}
+
+	if(enemiesLeft == 0){
+		battleDone = true;
+		setTimeout(function(){
+			battle = false;
+			$.each(allies, function(i, ally){
+				ally.health = ally.fullHealth;
+				ally.stamina = ally.fullStamina;
+			});
+
+			showEvent(events[battleScenario.success]);
+		}, 1000);
 	}
 }
 
@@ -504,11 +1052,19 @@ function tick()
 
 var lastEvent;
 
+var clickedChoice = false;
 function showEvent(event)
 {
 	if(!event) { showEvent(lastEvent); return; }
+	if(event.isBattle) {
+		if(event.effects){ 
+			$.each(event.effects, function(i, effect){ effect();});
+		}	
+		return;
+	}
 	console.log("starting event");
 	paused = true;
+	clickedChoice = false;
 
 	var content = (event.contentFn) ? formatText(event.contentFn()) : event.content;
 	$("#EventContent").html(content);
@@ -520,6 +1076,8 @@ function showEvent(event)
 		if(choice.condition && !choice.condition()) return true;
 		if(choice.text == "") console.log("choice text is empty for ", event);
 		var div = $('<div class="event choice">'+choice.text+'</div>').click(function(e){ 
+			if(clickedChoice) return;
+			clickedChoice = true;
 			var ch = this;
 			$("#EventChoices .choice").each(function(i, t)
 			{
@@ -586,6 +1144,7 @@ function formatText(text)
 	text = text.replaceAll('\n', "<p></p>");
 	text = text.replace(/\!([a-zA-Z]*)\!/gi, "<div class='shake'>$1</div>");
 	text = text.replace(/(\[.*?\])/gi, "<span class='attribute'>$1</span>");
+	text = text.replace(/\#([a-zA-Z]*)\#/gi, "<span class='zombie'>$1</span>");
 	return text.replace(/\*([a-zA-Z]*)\*/gi, "<span class='note'>$1</span>");
 }
 
@@ -619,7 +1178,13 @@ function Event(content, choices)
 	this.timedelay = 2500;
 
 	this.delay = function(d){
-		this.timedelay = d;
+		t.timedelay = d;
+		return t;
+	}
+
+	this.isBattle = false;
+	this.battle = function(v){
+		t.isBattle = (v===undefined) ? true : v;
 		return t;
 	}
 }
