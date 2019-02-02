@@ -363,9 +363,9 @@ function makeRockAttack()
 	return a;
 }
 
-function makeShovelAttack(level)
+function makeShovelAttack()
 {
-	var a = new Action("Attack", 8 + level * 2, 0);
+	var a = new Action("Hit with Shovel", 15, 10);
 	a.hitText = function(src, dst, damage){
 		return src.name + " swings the shovel wildly at " + dst.name + " and does " + damage + " damage";
 	};
@@ -424,7 +424,7 @@ var events = {
 	phoneStart: nEvent("Disabling the alarm, you notice something is wrong with your phone", "phoneStart2"),
 	phoneStart2: nEvent("First off, there's almost always a message from someone\nAnd today, on your <i>fricking</i> birthday, <b>none</b>\nNot like you care but that's weird", "phoneStart3").delay(5000),
 	phoneStart3 : dEvent("And second.. there's this weird text:\n<span class=\"levelup\">LEVEL UP!</span>\n<span class=\"skillpoint\">1 Skill Point Gained</span>", [
-		jumpChoice("The fuck?", "phoneStart4")
+		jumpChoice("What the hell?", "phoneStart4")
 	]),
 	phoneStart4 : dEvent("You click the screen and now it's asking where you'd like to put that skill point..", [
 		jumpChoice("Uh, charisma I guess? [Charisma + 1]", "phoneStart5"),
@@ -583,7 +583,7 @@ var events = {
 	reccenterFightFail: nEvent("You fall, and life slips as zombies surround you", "awake"),
 	reccenterBack2: dEvent("Fuck, the door is locked\nAnd now the zombie is at the foot of the stairs", [
 		descChoice("Jank at the handle for a bit more", "Yeah, it doesn't budge\nNice try though"),
-		descJumpChoice("Ram the door", "!DUNK!\n!AAAUUUUUUUUAAAAA!\nYou dislocated your shoulder!\nAt least the door is open", "dislocated"),
+		descJumpChoice("Ram the door", "!DUNK!\n!AAAUUUUUUUUAAAAA!\nYou dislocated your shoulder!\nAt least the door is open", "dislocated").delay(7500),
 		jumpChoice("Let Isaac pick the lock", "isaacOpen", function(){ return isaacJoined; }),
 	]),
 	dislocated: dEvent("Fuck. Fuck fuck fuck fuck\nFuck\nYour shoulder is dislocated", [
@@ -674,7 +674,7 @@ var events = {
 	]),
 
 	warehouseOutside: dEvent("You rush out of the burning warehouse, carrying as many useful tools as you can\nAs you exit, you see that a group of zombies have gathered around the Saab", [
-		jumpChoice("FIght them off", "warehouseBattle")
+		jumpChoice("Fight them off", "warehouseBattle")
 	]),
 
 	warehouseBattle: battleEvent([ makeZombie("Fat Zombie", 5), makeZombie("Zombie", 3), makeZombie("Zombie", 1), makeZombie("Zombie", 1), makeZombie("Zombie", 1) ], "warehouseWin", "warehouseFail", "Zombie Horde"),
