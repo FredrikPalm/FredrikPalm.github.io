@@ -80,12 +80,13 @@ function pulse(i, freq, min, max)
 var allies = [];
 var enemies = [];
 
-function Action(name, damage, cost, cond)
+function Action(name, damage, cost, cond, aoe)
 {
 	this.name = name;
 	this.damage = damage;
 	this.cost = cost;
 	this.condition = cond;
+	this.aoe = aoe;
 }
 
 function Character(name, level, image, actions)
@@ -101,6 +102,7 @@ function Character(name, level, image, actions)
 	this.stamina = this.fullStamina;
 
 	this.actions = (actions) ? actions : [ new Action("Attack", 10, 10) ];
+	this.protecting = {};
 }
 
 function showFade(text)
@@ -202,6 +204,15 @@ function descJumpChoice(text, description, next, c)
 	return new Choice(text, function(){ return showEvent(nEvent(description, next)); }, c);
 }
 
+function branchChoice(text, description, next, branch, c)
+{
+	return new Choice(text, function(){ 
+		if(branch())
+			return showEvent(nEvent(description, next)); 
+		return showEvent(new Event(description));
+	}, c);
+}
+
 /*
 	Saturday, February 2nd
 
@@ -230,7 +241,10 @@ var isaacJoined = false;
 var hasWeapon = false;
 var hasRock = false;
 var hasShovel = false;
-var secretMode = true;
+var cryCount = 0;
+var shoulderDislocated = false;
+var secretMode = false;
+var honk = 0;
 
 function makeAwake()
 {
@@ -349,9 +363,9 @@ function makeRockAttack()
 	return a;
 }
 
-function makeShovelAttack()
+function makeShovelAttack(level)
 {
-	var a = new Action("Hit with Shovel", 15, 10);
+	var a = new Action("Attack", 8 + level * 2, 0);
 	a.hitText = function(src, dst, damage){
 		return src.name + " swings the shovel wildly at " + dst.name + " and does " + damage + " damage";
 	};
@@ -384,6 +398,22 @@ function makeShovelAttack()
 	};
 
 	return a;
+}
+
+function branch(description, next, condition)
+{
+	if(condition()){
+		showEvent(nEvent(description, next));
+		return;
+	}
+	showEvent(new Event(description));
+}
+
+function makeZombie(name, level)
+{
+	var z = new Character(name, "Lv " + level + " Zombie", undefined, [ makeZombieAttack() ]);
+	z.health = z.fullHealth = 50 + 12 * level; 
+	return z;
 }
 
 var events = {
@@ -438,8 +468,10 @@ var events = {
 	]).effect(function(){ checkedCar = true; }), 
 	carHood: dEvent("You get out of the car and glance at the *neighbor* just standing there like a zombie. Creep\nYou walk around and open the hood. Your hands are freezing\nIt's pretty clear the *battery* is dead\nYou could jump-start it with another *car*", [
 		jumpChoice("Ask your neighbor", "askNeighborHelp"),
+		descJumpChoice("Kick the wheel", "!OOooooaauuawww!", "stubToe"),
 		descChoice("Check if there's another option in the garage", "Nope\nNo cars there, everyone's out\nNothing else helpful either\nFuck"),
 	]),
+	stubToe: nEvent("That was pretty dumb", "carHood"),
 
 	//neighbor
 	askNeighborHelp: nEvent("As much as you hate asking for help, it's probably your best option right now", "neighbor"),
@@ -477,19 +509,36 @@ var events = {
 	runToNeighborHouse: dEvent("You dart past the creepy neighbor\nYou feel a shill down your spine as he turns\nYou reach the house and panic as he approaches from behind\nYou knock and yell\nNo response\nYou turn\nHe's right there staring at you", [
 		jumpChoice("Fight him off", "fightNeighbor"),
 	]),
-	fightNeighbor: battleEvent([ new Character("Creepy Neighbor", "Lv 1 Zombie")], "fightSuccess", "fightFail"),
+	fightNeighbor: battleEvent([ makeZombie("Creepy Neighbor", 1)], "fightSuccess", "fightFail"),
 	fightSuccess: dEvent("His head falls off\n!What! !The! !Fuck!\n<i>This is fucked up</i>", [
-		descChoice("Scream", "!Auahahahah!").effect(function(){ if(cryCount == undefined) cryCount = 0; cryCount++; if(cryCount > 2) jumpTo("neighborCleanup"); }),
-		descChoice("Laugh", "!Auahahahah!").effect(function(){ if(cryCount == undefined) cryCount = 0; cryCount++; if(cryCount > 2) jumpTo("neighborCleanup"); }),
-		descChoice("Cry", "!Auahahahah!").effect(function(){ if(cryCount == undefined) cryCount = 0; cryCount++; if(cryCount > 2) jumpTo("neighborCleanup"); }),
+		branchChoice("Scream", "!Auahahahah!", "neighborCleanup", function(){ cryCount++; return cryCount > 2;}),
+		branchChoice("Laugh", "!Auahahahah!", "neighborCleanup", function(){ cryCount++; return cryCount > 2;}),
+		branchChoice("Cry", "!Auahahahah!", "neighborCleanup", function(){ cryCount++; return cryCount > 2;}),
 	]),
-	fightFail: dEvent("You fall", [
-
+	fightFail: nEvent("You fall\nThe zombie falls onto you, nmouth open, eating you alive\nYour vision blurs", "awake"),
+	neighborCleanup: dEvent("You hear a gut wrenching shreik\nA woman runs out of the house\n!No!\nShe collapses in front of her husband", [
+		jumpChoice("Oh, no", "neighborCleanup2"),
 	]),
-	neighborCleanup: dEvent("You look at the beheaded corpse\n", [
-		descChoice("Temp"),
+	neighborCleanup2: nEvent("You give her time", "neighborCleanup3"),
+	neighborCleanup3: dEvent("She looks up at you and then down at the ground\n<i>I knew</i>", [
+		jumpChoice("I'm so so sorry", "neighborCleanup4"),
 	]),
-
+	neighborCleanup4: dEvent("<i>He got sick last night</i>\n<i>It was all over the news, the pathogen, the disease</i>\nShe's struggling to speak, shaking", [
+		jumpChoice("Wait, what's going on?", "neighborCleanup5"),
+	]),
+	neighborCleanup5: dEvent("<i>I don't know</i>\n<i>He's been different for a while. He couldn't remember</i>\n<i>He wasn't himself. He was gone</i>", [
+		jumpChoice("It's a disease?", "neighborCleanup6"),
+	]),
+	neighborCleanup6: dEvent("<i>It spreads through the air\nPeople everywhere are getting sick like this</i>\n<i>GOSH DARN IT</i>\n", [
+		jumpChoice("We should get out of here. I need to find my family. My car isn't working", "neighborCleanup7"),
+	]),
+	neighborCleanup7: dEvent("<i>I'm getting back inside\nIt's the only safe place\nYou can take the car if you want\nI won't need it</i>", [
+		jumpChoice("Okay. Thank you. I'm sorry", "neighborCleanup8"),
+	]),
+	neighborCleanup8: dEvent("She takes one last look at her husband and walks back inside, clearly shaken", [
+		jumpChoice("Get the Saab back up and running", "saabWork"),
+	]),
+	saabWork: nEvent("You fiddle with the cars for a while, and finally get it running\nAwesome!", "saabGood"),
 	saabGood: dEvent("Like a true Swede, the loyal Saab can always be trusted\nExcept when it has a breakdown\nBut now it's back up and ready to go!", [
 		jumpChoice("Go look for Kelli at the Rec Center", "reccenter"),
 		jumpChoice("Go look for Isaac at the warehouse", "warehouse"),
@@ -501,33 +550,158 @@ var events = {
 	]),
 	
 	//Kelli
-	reccenter: dEvent("Approaching the Rec Center, you see the harrowing sight of zombies surrounding the building\nThe thought that Kelli could be one of them is too awful to even consider. She must be alive\nYou can either rush in through the front, or sneak around and find a back entrance", 
-	[jumpChoice("Enter the Rec Center", "reccenter2")]),
-	reccenter2: dEvent("You hear the glorious sound of a laugh that could only belong to Kelli\nWhere is she? She must be close", 
+	reccenter: dEvent("Approaching the Rec Center, you see the harrowing sight of zombies surrounding the building\nThe thought that Kelli could be one of them is too awful to even consider. She must be alive\nYou can either rush through the zombies at the front, or sneak around and find a safer entrance", 
+	[
+		jumpChoice("Rush the front", "reccenterFront"),
+		jumpChoice("Sneak in the back", "reccenterBack"),
+		descChoice("Honk", "<i>TUUUU</i>\nThe zombies barely react, but it looks like they're moving in your direction"),
+		jumpChoice("Try to run over zombies", "reccenterAssault"),
+	]),
+	reccenterAssault: dEvent("You pat the wheel of your beloved car\n<i>Okay, let's do this</i>", [
+		jumpChoice("Floor it", "assaultSuccess"),
+		jumpChoice("Try to stay in control", "assaultFail"),
+		jumpChoice("On second thought...", "reccenter"),
+	]),
+	assaultSuccess: dEvent("The engine roars as you speed toward one unlucky zombie\n!DUNK!\nThe body slams into the car with a crunching sound\nThe pedal still floored, you slam into another zombie crushing the first beneath the wheels and coming to a stop", [
+		jumpChoice("Get out and run for it", "reccenterFightPreEasy"),
+	]),
+	assaultFail: dEvent("You drive towards the nearest zombie\n!CRUUUUUNCH!\nThe body slams into the car and you come to a stop\n", [
+		jumpChoice("Get out and run for it", "reccenterFightPre"),
+	]),
+	reccenterFront: dEvent("This feels like it might be stupid, but you want to find Kelli fast\nYou get out and sprint towards the entrance\nThe zombies turn to face you and start moving\nYou won't be able to run past", [
+		jumpChoice("Try anyway..", "reccenterFightPre"),
+		jumpChoice("Turn around and run back", "reccenterBack"),
+	]),
+	reccenterFightPre: nEvent("You run, but a zombie grabs you and another blocks your path\nYou have to fight", "reccenterFight").delay(5000),
+	reccenterFightPreEasy: nEvent("You run, but a remaining zombie grabs you\nYou have to fight", "reccenterFightEasy").delay(5000),
+	reccenterFight: battleEvent([ makeZombie("Zombie", 3), makeZombie("Zombie", 3), makeZombie("Zombie", 1), makeZombie("Zombie", 1) ], "reccenterFightWin", "reccenterFightFail", "Zombie Horde"),
+	reccenterFightEasier: battleEvent([ makeZombie("Zombie", 3), makeZombie("Zombie", 1) ], "reccenterFightWin", "reccenterFightFail", "Zombies"),
+	reccenterBack: dEvent("You run around the side of the building\nThere are stairs leading to a side exit\nA zombie stands nearby but won't get in the way", [
+		jumpChoice("Take the stairs", "reccenterBack2"),
+	]),
+	reccenterFightWin: nEvent("Woo, you did it\nThe last zombie falls and the entrance is free\nYou rush to enter", "reccenter2"),
+	reccenterFightFail: nEvent("You fall, and life slips as zombies surround you", "awake"),
+	reccenterBack2: dEvent("Fuck, the door is locked\nAnd now the zombie is at the foot of the stairs", [
+		descChoice("Jank at the handle for a bit more", "Yeah, it doesn't budge\nNice try though"),
+		descJumpChoice("Ram the door", "!DUNK!\n!AAAUUUUUUUUAAAAA!\nYou dislocated your shoulder!\nAt least the door is open", "dislocated"),
+		jumpChoice("Let Isaac pick the lock", "isaacOpen", function(){ return isaacJoined; }),
+	]),
+	dislocated: dEvent("Fuck. Fuck fuck fuck fuck\nFuck\nYour shoulder is dislocated", [
+		jumpChoice("Carry on anyway", "reccenter2"),
+		descJumpChoice("Try to.. relocate it", "!aaaaa!\nIt's excrutiating but you manage to do it\nTime to move", "reccenter2"),
+	]).effect(function(){ shoulderDislocated = true; sagan.health -= 20; }),
+	isaacOpen: dEvent("<i>Hold on, let me see if I can open it</i>\nHe rummages around a seemingly endless pocket before producing a lockpick\nWith total focus and some silly faces, he gets the door open\n<i>Alohomora, was it?</i>", [
+		jumpChoice("<i>I love you.... Now let's go!</i>", "reccenter2"),	
+	]),
+
+	reccenter2: dEvent("You enter and hear the glorious sound of a laugh that could only belong to Kelli\nWhere is she? She must be close", 
 	[jumpChoice("Follow the laugh", "reccenter3")]),
 	reccenter3: dEvent("<i>Hooooooly shit</i>\nYou can't believe what you're seeing\nThe ice rink is covered in blood\nA figure is skating around with a baseball bat in hand, acrobatically dancing around dodging and beating the crap out of zombies\n<i>Eat shit you fuuuckers!</i>", [ jumpChoice("<i>!KELLIIIIIII!!!!!</i>", "kelli")]),
-	kelli: dEvent("<i>Hey Sagan!</i>\n<i>I'm a warrior now</i>\nShe swings the bat at a zombie and its head goes flying\n<i>Let's kick some zombie butt</i>", [ jumpChoice("<i>!KEEEEELLIIIIIII!!!!!</i>", "kelli2")]).effect(function(){
+	kelli: dEvent("<i>Sagan!</i>\nShe swings the bat at a zombie and its head goes flying\n<i>Let's kick some zombie butt</i>", [ jumpChoice("<i>!KEEEEELLIIIIIII!!!!!</i>", "kelli2")]).effect(function(){
 		allies.push(kelli);
+		kelliJoined = true;
 	}),
-	kelli2: battleEvent([ new Character("Zombie", "Lv 5 Zombie"), new Character("Zombie", "Lv 3 Zombie"), new Character("Zombie", "Lv 3 Zombie"), new Character("Zombie", "Lv 1 Zombie"), new Character("Zombie", "Lv 3 Zombie") ], "kelliFightWin", "kelliFightFail", "Zombie Horde"),
-	kelliFightWin: dEvent("<i>Wooo</i>", [
-		descChoice("Hey"),
-		descChoice("<i>Hug</i>"),
+	kelli2: battleEvent([ makeZombie("Fat Zombie", 5), makeZombie("Zombie", 3), makeZombie("Zombie", 3), makeZombie("Zombie", 3), makeZombie("Zombie", 1) ], "kelliFightWin", "kelliFightFail", "Zombie Horde"),
+	kelliFightWin: dEvent("The last zombie falls to the ground\nYou're exhausted\n<i>Wooo</i>\n<i>Hey. Happy birthday</i>", [
+		jumpChoice("Kelli! Are you okay??", "kelli3"),
 	]),
-	kelliFightFail: dEvent(""),
+	kelliFightFail: nEvent("You fall and Kelli lies lifeless on the ground, zombies approach\nYour vision fades to black", "awake").delay(10000),
 
+	kelli3: dEvent("She gives a hug so big you almost fall over on the ice\nShe let's go and glides away on her skates looking at your feet\n<i>I'm surprised you haven't fallen over</i>", [
+		descJumpChoice("<i>Haha, that's the first thing that comes to mind?", "<i>Guess so</i>", "kelli4"),
+		jumpChoice("<i>I'm pretty sure I will collapse any second", "kelli4"),
+	]),
+	kelli4: dEvent("<i>You were pretty badass\nDid I see you headbutt that guy?\n", [
+		descJumpChoice("<i>I barely remember</i>", "<i>It was cool as fuck</i>", "kelli5"),
+		descJumpChoice("<i>You kicked ass too! And what's with the eyeliner?</i>", "<i>It's camo. I'm a warrior</i>", "kelli5"),
+	]),
+	kelli5: dEvent("<i>I'm glad you're okay</i>", [
+		jumpChoice("<i>I'm glad you're okay too. Let's get out of here</i>", "kelli6"),
+	]),
+	kelli6: nEvent("Together, you rush out of the building the way you came and get in the Saab", "saabKelli"),
+	saabKelli: dEvent("You're in the Saab together. It feels so good", [
+		jumpChoice("Go find Isaac at the warehouse", "warehouse", function(){ return !isaacJoined; }),
+		jumpChoice("You're all together", "allTogether", function(){ return isaacJoined; })
+	]),
+	
 	/*
-		Kelli at the Rec Center
-
-
+		Isaac
 	*/
+	warehouse: dEvent("You pull up to the warehouse\nThere are no zombies in sight\nIt looks like the warehouse has been fortified", [
+		jumpChoice("See if anyone's inside", "warehouse1"),
+	]),
 
+	warehouse1: dEvent("You walk up to the entrance\n<i>Woooooosh</i>\nYou duck instinctively, an arrow just soared past you", [
+		jumpChoice("Shit! Isaac! It's me!", "warehouse2"),
+		jumpChoice("Rush inside", "warehouse2"),
+	]),
 
+	warehouse2: dEvent("A familiar face peaks out of the building\n<i>Sagan!\nShit, sorry. I rigged up some traps\nDidn't mean to scare you\n</i>You suddenly feel much better knowing he's okay", [
+		jumpChoice("Head inside and hug", "warehouse3"),
+	]),
+
+	warehouse3: dEvent("I'm so glad you're safe!\nDo you know what's happening?", [
+		jumpChoice("Yeah, I got the gist of it..", "warehouse4"),
+	]).effect(function(){
+		allies.push(isaac);
+		isaacJoined = true;
+		allies[0].actions.push(new Action("Crossbow Shot", 25, 30));
+	}),
+
+	warehouse4: dEvent("<i>It's messed up. It must have been spreading dormantly. Apparently most of California just dropped dead\nI've been trying to set up radios. It's the only thing that works\nHere, grab a knife</i>", [
+		jumpChoice("Thanks, this is really useful", "warehouse5"),
+	]),
+
+	warehouse5: dEvent("<i>And I made this helmet, and this utility belt, and this crossbow, and this arcade cabinate\nThat last one is mostly for fun</i>", [
+		jumpChoice("Haha that's cool... And what's that huge gun?", "warehouse6"),
+	]),
+
+	warehouse6: dEvent("<i>Oh yeah, so you know this World War 2 flamethrower replica I've been working on?\nHe holds the heavy gun up with both hands and coolly pulls the trigger\n<i>Click</i>\n<i>Click</i>\n<i>Okay.. it doesn't work every ti-<span style='color: #ef1515;'>!BOOOOOOOOOOOOOM!</span>\n", [
+		jumpChoice("Well that's great", "warehouse7"),
+	]),
+
+	warehouse7: dEvent("The roof is on fire\n<i>It's a little bit unreliable, but it should take care of the zombies</i>", [
+		jumpChoice("Yeah, we're not using that. It's too dangerous", "disagreeFlame"),
+		jumpChoice("Awesome... we might need it", "agreeFlame"),
+	]),
+
+	disagreeFlame: dEvent("<i>I can fix it\nI'm bringing it with me just in case\nWe should probably get the hell out of here</i>", [
+		jumpChoice("Rush outside", "warehouseOutside"),
+	]),
+
+	agreeFlame: dEvent("<i>I hope not. We should probably get the hell out of here, though</i>", [
+		jumpChoice("Rush outside", "warehouseOutside"),
+	]),
+
+	warehouseOutside: dEvent("You rush out of the burning warehouse, carrying as many useful tools as you can\nAs you exit, you see that a group of zombies have gathered around the Saab", [
+		jumpChoice("FIght them off", "warehouseBattle")
+	]),
+
+	warehouseBattle: battleEvent([ makeZombie("Fat Zombie", 5), makeZombie("Zombie", 3), makeZombie("Zombie", 1), makeZombie("Zombie", 1), makeZombie("Zombie", 1) ], "warehouseWin", "warehouseFail", "Zombie Horde"),
+
+	warehouseWin: dEvent("The last of the zombies falls motionless onto the ground", [
+		jumpChoice("Get in the Saab before more zombies appear", "warehouseAfter"),
+	]),
+	warehouseFail: nEvent("You fall\nLife slips away", "awake"),
+
+	warehouseAfter: dEvent("You hurry into the Saab and set off back towards the city", [
+		jumpChoice("Go find Kelli at the Rec Center", "reccenter", function(){ return !kelliJoined; }),
+		jumpChoice("You're all together.", "allTogether", function(){ return kelliJoined; })
+	]),
+
+	allTogether: dEvent("<i>So what do we do now, Sagan?</i>", [
+		jumpChoice("<i>We go find people to help</i>", "end"),
+		jumpChoice("<i>We go where there are no people</i>", "end"),
+	]),
+
+	end: dEvent("The End", [
+		jumpChoice(""),
+	]),
 };
 
 function makePunchAttack()
 {
-	var a = new Action("Punch", 5, 5);
+	var a = new Action("Punch", 5, 2);
 	a.hitText = function(src, dst, damage){
 		return src.name + " punches " + dst.name + " in the jaw and does " + damage + " damage";
 	};
@@ -559,7 +733,7 @@ function makeKickAttack()
 {
 	var a = new Action("Kick", 10, 10);
 	a.hitText = function(src, dst, damage){
-		return src.name + " kicks " + dst.name + "  " + damage + " damage";
+		return src.name + " kicks " + dst.name + " for " + damage + " damage";
 	};
 
 	a.missText = function(src, dst){
@@ -644,6 +818,8 @@ function makeProtect()
 	};
 
 	a.effect = function(src, dst){
+		dst.safe = true;
+		src.protecting = dst;
 		return "";
 	};
 
@@ -652,9 +828,17 @@ function makeProtect()
 
 function makeKelli()
 {
+	var batHit = new Action("Bat Hit", 10, 3);
 	var skateSlash = new Action("Skate Slash", 30, 10);
+	skateSlash.effect = function(src, dst){
+		src.safe = false;
+	};
 	var skateDodge = new Action("Skate Dodge", 0, 10);
-	var kelli = new Character("Kelli", "Lv 20 Warrior", "kelli.png", [ skateSlash, skateDodge ]);
+	skateDodge.effect = function(src, dst){
+		src.safe = true;
+	};
+	skateDodge.selfOnly = true;
+	var kelli = new Character("Kelli", "Lv 20 Warrior", "kelli2.png", [ batHit, skateSlash, skateDodge ]);
 	kelli.fullHealth = 80;
 	kelli.health = 50;
 	return kelli;
@@ -662,9 +846,9 @@ function makeKelli()
 
 function makeIsaac()
 {
-	var wrenchStrike = new Action("Wrench Strike", 30, 10);
-	var skateDodge = new Action("", 0, 10);
-	var isaac = new Character("Isaac", "Lv 26 Nerd", "isaac.png", [ wrenchStrike, skateDodge ]);
+	var wrenchStrike = new Action("Wrench Strike", 20, 2);
+	var crossbow = new Action("Flamethrower", 10, 40, undefined, true);
+	var isaac = new Character("Isaac", "Lv 26 Nerd", "isaac2.png", [ wrenchStrike, crossbow ]);
 	return isaac;
 }
 
@@ -680,11 +864,11 @@ $(document).ready(function(){
 
 	$("#Tint").removeClass("blurred");
 
-	sagan = new Character("Sagan May", "Lv 27 Badass", "sagan2.jpg", [ makePunchAttack(), makeKickAttack(), makeHeadButtAttack(), makeProtect() ]);
+	sagan = new Character("Sagan May", "Lv 27 Badass", "sagan2.png", [ makePunchAttack(), makeKickAttack(), makeHeadButtAttack() ]); //makeProtect()
 	kelli = makeKelli();
-	
+	isaac = makeIsaac();
+
 	allies.push(sagan);
-	
 
 	var hash = (window.location.hash) ? window.location.hash.substr(1) : "";
 	if(window.location.hash && events[hash]){
@@ -739,6 +923,10 @@ var lastAction;
 function makeAction(action){
 	return $("<span></span>").addClass("button").addClass("actionButton").text(action.name).click(function(){
 		if(!battle || battleDone) return;
+		if(currentCharacter && action.cost && action.cost > currentCharacter.stamina) {
+			showBattleInfo("Not enough stamina");
+			return;
+		}
 		battleState = 1;
 		selectedAction = action;
 		selectedTarget = undefined;
@@ -777,34 +965,43 @@ function showBattleInfo(message, ally, hit, crit)
 	}).fadeTo(2000, 0.0);
 }
 
-function runAction(character, action, target)
+function runAction(character, action, targets)
 {
 	if(!battle || battleDone) return;
-	var chance = 1.0;
-	if(action.hitChance) chance = action.hitChance(character, target);
-	var hit = random(0.0, 1.0) < chance;
-	var crit = hit && action.critChance && random(0.0, 1.0) < action.critChance(character, target);
-	if(hit){
-		var damage = action.damage * random(0.8, 1.2);
-		if(!!character.rage) damage *= random(2.0, 3.0);
-		if(crit) damage *= random(1.5,2.5);
-		damage = Math.round(damage);
-		var fallback = character.name + " hits " + target.name + " with " + action.name + " for " + damage; 
-		var fn = (crit && action.critText) ? action.critText : action.hitText;
-		var message = (fn) ? fn(character, target, damage) : fallback;
-		target.health -= damage;
-		showBattleInfo(message, true, true, crit);
-	}
-	else{
-		var fallback = character.name + " misses " + target.name + " with " + action.name;
-		var message = (action.missText) ? action.missText(character, target) : fallback;
-		showBattleInfo(message, true, false, false);
-	}
 
-	if(action.effect){ 
-		var message = action.effect(character, target); 
-		if(message && message.length > 0)
+	if(!targets.length)
+		targets = [targets];
+
+	for(var i = 0; i < targets.length; i++){
+		var target = targets[i];
+		if(target.health <= 0) continue;
+		var chance = 0.9;
+		if(action.hitChance) chance = action.hitChance(character, target);
+		if(!!character.safe) chance = 0.1;
+		var hit = random(0.0, 1.0) < chance;
+		var crit = hit && action.critChance && random(0.0, 1.0) < action.critChance(character, target);
+		if(hit){
+			var damage = action.damage * random(0.8, 1.2);
+			if(!!character.rage) damage *= random(2.0, 3.0);
+			if(crit) damage *= random(1.5,2.5);
+			damage = Math.round(damage);
+			var fallback = character.name + " hits " + target.name + " with " + action.name + " for " + damage; 
+			var fn = (crit && action.critText) ? action.critText : action.hitText;
+			var message = (fn) ? fn(character, target, damage) : fallback;
+			target.health -= damage;
+			showBattleInfo(message, true, true, crit);
+		}
+		else{
+			var fallback = character.name + " misses " + target.name + " with " + action.name;
+			var message = (action.missText) ? action.missText(character, target) : fallback;
 			showBattleInfo(message, true, false, false);
+		}
+	
+		if(action.effect){ 
+			var message = action.effect(character, target); 
+			if(message && message.length > 0)
+				showBattleInfo(message, true, false, false);
+		}
 	}
 
 	if(action.cost) character.stamina -= action.cost
@@ -857,7 +1054,7 @@ function updateBattleUI()
 		for(var s = 0; s < 2; s++){
 			var list = (s == 0) ? allies : enemies;
 			for(var i = 0; i < list.length; i++){
-				list[i].stamina += 2;
+				list[i].stamina += 3;
 				if(list[i].stamina > list[i].fullStamina)
 					list[i].stamina = list[i].fullStamina;
 			}
@@ -909,8 +1106,13 @@ function updateBattleUI()
 				selectedTarget = enemies[0];
 			}
 		}
+		if(selectedAction.selfOnly)
+			selectedTarget = currentCharacter;
 		
-		if(selectedTarget !== undefined){
+		if(selectedTarget !== undefined || selectedAction.aoe){
+			if(selectedAction.aoe){
+				selectedTarget = enemies;
+			}
 			runAction(currentCharacter, selectedAction, selectedTarget);
 			selectedAction = undefined;
 			selectedTarget = undefined;
@@ -1008,11 +1210,6 @@ function updateBattleUI()
 
 function tick()
 {
-	if(!paused)
-	{
-	
-	}
-	
 	var showCharacter = gotup && !battle;
 	var showing = !$("#CharacterContainer").hasClass("hidden");
 	if(showCharacter != showing){
@@ -1103,7 +1300,7 @@ function showEvent(event)
 	var last = (event.next) ? event.next : lastEvent;
 	if(last && last.length) last = events[last];
 	if(choices.children().length == 0){
-		var delay = (event.timedelay === undefined) ? 2500 : event.timedelay;
+		var delay = (event.timedelay === undefined) ? 3000 : event.timedelay;
 		setTimeout(function(){
 			endEvent();
 			$("#EventChoices").fadeTo(0,0);

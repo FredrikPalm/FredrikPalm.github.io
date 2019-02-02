@@ -100,7 +100,7 @@ html, body {
 
 .attribute{
     color: #99d0d0;
-    font-family: Roboto;
+    font-family: 'Fredericka the Great';
 }
 
 .hidden
@@ -111,14 +111,14 @@ html, body {
 .levelup
 {
     color: aqua;
-    font-family: Roboto;
+    font-family: 'Fredericka the Great';
     font-size: 110%;
 }
 
 .skillpoint
 {
     color: #44b7b7;
-    font-family: Roboto;
+    font-family: 'Fredericka the Great';
     font-size: 80%;
 }
 
@@ -266,6 +266,7 @@ html, body {
     animation: shake 0.75s; 
   /* When the animation is finished, start again */
     animation-iteration-count: infinite; 
+    display: inline-block;
 }
 
 @keyframes shake {
@@ -285,13 +286,12 @@ html, body {
 #CharacterContainer
 {
 	position: absolute;
-	font-family: "Alegreya Sans SC";
 	right: 5%;
 	top: 5%;
 	/* font-size: 1.1em; */
 	/* margin-left: 10px; */
 	/* margin: 20px; */
-	font-family: Arial;
+	font-family: Roboto;
 	color: #b7b1b1;
 	/*min-width: 250px;*/
 	/* position: relative; */
@@ -301,7 +301,7 @@ html, body {
 }
 
 #BattleContainer {
-    font-family: Arial;
+    font-family: Roboto;
     font-size: 1em;
     color: #a5a5a5;
 }
@@ -457,7 +457,7 @@ div .charAttribute:nth-of-type(1)
     /*top: 45%;*/
     left: 10%;
     right: 20%;
-    font-family: Arial;
+    font-family: Roboto;
     font-size: 1.4em;
     color: #a5a5a5;
     /*opacity: 0.0;*/
