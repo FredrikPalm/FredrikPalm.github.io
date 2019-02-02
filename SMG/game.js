@@ -583,13 +583,13 @@ var events = {
 	reccenterFightFail: nEvent("You fall, and life slips as zombies surround you", "awake"),
 	reccenterBack2: dEvent("Fuck, the door is locked\nAnd now the zombie is at the foot of the stairs", [
 		descChoice("Jank at the handle for a bit more", "Yeah, it doesn't budge\nNice try though"),
-		descJumpChoice("Ram the door", "!DUNK!\n!AAAUUUUUUUUAAAAA!\nYou dislocated your shoulder!\nAt least the door is open", "dislocated").delay(7500),
+		descJumpChoice("Ram the door", "!DUNK!\n!AAAUUUUUUUUAAAAA!\nYou dislocated your shoulder!\nAt least the door is open", "dislocated"),
 		jumpChoice("Let Isaac pick the lock", "isaacOpen", function(){ return isaacJoined; }),
 	]),
 	dislocated: dEvent("Fuck. Fuck fuck fuck fuck\nFuck\nYour shoulder is dislocated", [
 		jumpChoice("Carry on anyway", "reccenter2"),
 		descJumpChoice("Try to.. relocate it", "!aaaaa!\nIt's excrutiating but you manage to do it\nTime to move", "reccenter2"),
-	]).effect(function(){ shoulderDislocated = true; sagan.health -= 20; }),
+	]).effect(function(){ shoulderDislocated = true; sagan.health -= 20; }).delay(7500),
 	isaacOpen: dEvent("<i>Hold on, let me see if I can open it</i>\nHe rummages around a seemingly endless pocket before producing a lockpick\nWith total focus and some silly faces, he gets the door open\n<i>Alohomora, was it?</i>", [
 		jumpChoice("<i>I love you.... Now let's go!</i>", "reccenter2"),	
 	]),
