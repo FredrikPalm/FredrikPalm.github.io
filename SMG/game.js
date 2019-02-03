@@ -296,7 +296,7 @@ function battleEvent(enemies_, success, fail, encounter)
 	return new dEvent("").effect(function(){
 		enemies = enemies_;
 		battleScenario.success = success;
-		battleScenario.fail = fail;
+		battleScenario.fail = fail;  
 		startBattle(encounter);
 	}).battle();
 }
@@ -652,7 +652,7 @@ var events = {
 		jumpChoice("Thanks, this is really useful", "warehouse5"),
 	]),
 
-	warehouse5: dEvent("<i>And I made this helmet, and this utility belt, and this crossbow, and this arcade cabinate\nThat last one is mostly for fun</i>", [
+	warehouse5: dEvent("<i>And I made this helmet, facemask, and this utility belt, and this crossbow, and this arcade cabinate\nThat last one is mostly for fun</i>", [
 		jumpChoice("Haha, this is amazing... And what's that huge gun?", "warehouse6"),
 	]),
 
@@ -690,13 +690,19 @@ var events = {
 	]),
 
 	allTogether: dEvent("<i>So what do we do now, Sagan?</i>", [
-		jumpChoice("<i>We go find people to help</i>", "end"),
-		jumpChoice("<i>We go where there are no people</i>", "end"),
+		jumpChoice("<i>We go find people to help</i>", "endA"),
+		jumpChoice("<i>We go where there are no people</i>", "endB"),
 	]),
 
-	end: dEvent("The End", [
-		jumpChoice(""),
+	endA: dEvent("You head back into the city with a plan\nYou work hard\nUsing your creativity for clever makeshift solutions, your stubborness to keep going, and your slyness to make the best decisions\nYour names aren't known, but together you make a big difference", [
+		jumpChoice("The End", "end"),
 	]),
+
+	endB: dEvent("You ride off into the desert, happy to be with the people that matter most\nCombining all your many skills, you're able to live independently and thrive free from society\nYou take care of yourselves and live happily", [
+		jumpChoice("The End", "end"),
+	]),
+
+	end: dEvent("", [ jumpChoice("")]),
 };
 
 function makePunchAttack()
@@ -1234,6 +1240,7 @@ function tick()
 		if(showBattle) startBattleUI();
 	}
 	if(showBattle) updateBattleUI();
+
 
 	/*
 	if(night){
