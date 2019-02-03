@@ -653,7 +653,7 @@ var events = {
 	]),
 
 	warehouse5: dEvent("<i>And I made this helmet, and this utility belt, and this crossbow, and this arcade cabinate\nThat last one is mostly for fun</i>", [
-		jumpChoice("Haha that's cool... And what's that huge gun?", "warehouse6"),
+		jumpChoice("Haha, this is amazing... And what's that huge gun?", "warehouse6"),
 	]),
 
 	warehouse6: dEvent("<i>Oh yeah, so you know this World War 2 flamethrower replica I've been working on?\nHe holds the heavy gun up with both hands and coolly pulls the trigger\n<i>Click</i>\n<i>Click</i>\n<i>Okay.. it doesn't work every ti-<span style='color: #ef1515;'>!BOOOOOOOOOOOOOM!</span>\n", [
@@ -854,6 +854,11 @@ function makeIsaac()
 
 $(document).ready(function(){
 	setInterval(tick, 10);
+
+	$(document).keypress(function(event){
+		if(String.fromCharCode(event.which) == 'h')
+			secretMode = true;
+	  });
 
 	$(window).bind(
 	  'touchmove',
