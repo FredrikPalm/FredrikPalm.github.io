@@ -1,0 +1,175 @@
+body
+{
+	background: #EEE;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	margin:0px;
+	-webkit-transition: background 4s ease-in-out;
+	-moz-transition: background 4s ease-in-out;
+	-o-transition: background 4s ease-in-out;
+	transition: background 4s ease-in-out;
+	color: #4c4c4c;
+}
+
+html, body {
+  overflow:hidden;
+}
+
+.blurred
+{
+	-webkit-filter: blur(10px);
+	-webkit-filter: blur(10px);
+	-moz-filter: blur(10px);
+	-o-filter: blur(10px);
+	filter: blur(10px);
+}
+
+#Tint
+{
+	background: rgba(207,194,185,0.06);
+	width: 100%;
+	height: 100%;
+	-webkit-transition: all 4s ease-in-out;
+	-moz-transition: all 4s ease-in-out;
+	-o-transition: all 4s ease-in-out;
+	transition: all 4s ease-in-out;
+}
+
+*
+{
+	cursor: default;
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none;   /* Chrome/Safari/Opera */
+	-khtml-user-select: none;    /* Konqueror */
+	-moz-user-select: none;      /* Firefox */
+	-ms-user-select: none;       /* Internet Explorer/Edge */
+	user-select: none;
+	-webkit-transition: all 0.5s ease-in-out;
+	-moz-transition: all 0.5s ease-in-out;
+	-o-transition: all 0.5s ease-in-out;
+	transition: all 0.5s ease-in-out;
+}
+
+.ui-draggable-dragging
+{
+	-webkit-transition: none !important;
+	-moz-transition: none !important;
+	-o-transition: none !important;
+	transition: none !important;
+}
+
+.ui-state-active, .ui-droppable-active
+{
+	background: rgba(123,123,123,0.3);
+}
+
+.ui-state-hover, .ui-droppable-hover
+{
+	background: rgba(150,150,159,0.3);
+}
+
+.vr, .hr
+{
+    background-color: rgba(0, 0, 0, 0.17);
+    position: absolute;
+}
+
+.vr {
+    height: 30%;
+    width: 1px;
+    top: 35%;
+    left: 50%;
+}
+
+.hr
+{
+	height: 1px;
+    width: 30%;
+    top: 50%;
+    left: 35%;
+}
+
+#Title {
+    font-size: 2em;
+    margin-left: 2%;
+}
+
+#ListContainer {
+    width: 95%;
+    height: 95%;
+    background: aliceblue;
+    margin-left: 1%;
+}
+
+#ListHeader {
+    padding: 1em;
+}
+
+.Project:nth-child(odd) {
+    background: #e6ddda82;
+}
+
+.Project {
+    background: #e8dfdb82;
+    padding: 1em;
+    margin-left: 2px;
+    margin-bottom: 2px;
+}
+
+.Project span {
+    font-size: 1.5em;
+    font-weight: bold;
+    font-family: Roboto;
+}
+
+.Project .name {
+    width: 40%;
+    max-width: 40%;
+    display: inline-block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.Project .amountDone, .Project .amountTotal {
+    font-size: 1.0em;
+}
+
+.Project .percentDone {
+    font-size: 2.0em;
+}
+
+.Project .completion {
+	display: inline-block;
+    margin-left: 2em;
+}
+
+.Project .eta {
+	display: inline-block;
+    margin-left: 10em;
+}
+
+#ListAdd {
+    background: #efe9e3;
+    margin-top: 2%;
+    margin-left: 2%;
+    padding: 1em;
+    width: 5em;
+    text-align: center;
+    border-radius: 25px;
+}
+
+.button:hover
+{
+	cursor: pointer;
+}
+
+@media screen and (max-height: 800px), screen and (max-width: 800px)
+{	
+	body 
+	{
+		font-size: 65%;
+		overflow: hidden;
+	}
+}

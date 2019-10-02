@@ -1,0 +1,70 @@
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+<link id="layout" href="layout.css" rel="stylesheet" type="text/css" />
+
+<link href='http://fonts.googleapis.com/css?family=Alegreya+Sans+SC' rel='stylesheet' type='text/css'>
+
+<link href="https://fonts.googleapis.com/css?family=Amatic+SC" rel="stylesheet">
+
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
+<script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
+
+<script type="text/javascript" src="game.js"></script>
+
+<title>Trender</title>
+</head>
+
+<body ng-app="TrenderApp" ng-controller="main">
+<div id="wrap">
+
+  <!-- Begin page content -->
+  <div class="container">
+    <span id="Title">Trender</span>
+	<div id="ListContainer">
+    <div class="Project" ng-repeat="project in projects">
+    	<span ng-hide="editingProject" ng-click="editingProject = true" class="name">{{project.name}}</span>
+    	<form ng-show="editingProject" ng-submit="editingProject = false; update()" class="name">
+    		<div>
+    		<label>Name:</label>
+    		<input type="text" ng-model="project.name" placeholder="Name" ng-required/>
+    		<label>Amount:</label>
+    		<input type="number" ng-model="project.duration" placeholder="1" ng-required/>
+    		</div>
+    		<button class="btn" type="submit">Save</button>
+    	</form>
+    	<div ng-hide="editingProject" class="completion" ng-mousedown="editAmountDone(project, $event)">
+    		<span class="percentDone">{{project.percentDoneString()}}</span>
+			<span class="amountDone">{{project.amountDone.toFixed(2)}} /</span>
+			<span class="amountTotal">{{project.duration.toFixed(2)}}</span>
+    	</div>
+		<span ng-hide="editingProject" class="eta">{{project.eta}}</span>
+    </div>
+
+   <form ng-show="addingProject" ng-submit="newProject(); addingProject = false; update()">
+   	<div class="Project">
+   		<div>
+   			<label>Name:</label>
+    		<input type="text" ng-model="projectname" placeholder="Name" ng-required/>
+    		<label>Amount:</label>
+    		<input type="number" ng-model="projectduration" placeholder="1" ng-required/>
+    		<!---<span class="durationEdit"></span>-->
+   		</div>
+    	<button class="btn" type="submit">Save</button>
+    </div>
+   </form>
+
+   <div id="ListAdd">
+  	<span class="button" ng-click="addingProject = true">Add</span>
+  </div> 
+	</div>
+  </div>
+</div>
+
+</body>
+</html>
