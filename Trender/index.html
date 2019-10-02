@@ -29,7 +29,7 @@
 	<div id="ListContainer">
     <div class="Project" ng-repeat="project in projects">
     	<span ng-hide="editingProject" ng-click="editingProject = true" class="name">{{project.name}}</span>
-    	<form ng-show="editingProject" ng-submit="editingProject = false; update()" class="name">
+    	<form ng-show="editingProject" ng-submit="editingProject = false; update()">
     		<div>
     		<label>Name:</label>
     		<input type="text" ng-model="project.name" placeholder="Name" ng-required/>
