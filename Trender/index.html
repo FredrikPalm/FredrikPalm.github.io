@@ -12,7 +12,7 @@
 
 <link href="https://fonts.googleapis.com/css?family=Amatic+SC" rel="stylesheet">
 
-<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.min.js"></script>
 <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
 
 <script type="text/javascript" src="game.js"></script>
@@ -29,15 +29,15 @@
 	<div id="ListContainer">
     <div class="Project" ng-repeat="project in projects">
     	<span ng-hide="editingProject" ng-click="editingProject = true" class="name">{{project.name}}</span>
-    	<form ng-show="editingProject" ng-submit="editingProject = false; update()">
+    	<div ng-show="editingProject">
     		<div>
     		<label>Name:</label>
-    		<input type="text" ng-model="project.name" placeholder="Name" ng-required/>
+    		<input type="text" ng-model="project.name" placeholder="Name"/>
     		<label>Amount:</label>
-    		<input type="number" ng-model="project.duration" placeholder="1" ng-required/>
+    		<input type="number" ng-model="project.duration" placeholder="1"/>
     		</div>
-    		<button class="btn" type="submit">Save</button>
-    	</form>
+    		<button class="btn" ng-click="editingProject = false; update()">Save</button>
+    	</div>
     	<div ng-hide="editingProject" class="completion" ng-mousedown="editAmountDone(project, $event)" ng-touchstart="editAmountDone(project, $event)">
     		<span class="percentDone">{{project.percentDoneString()}}</span>
 			<span class="amountDone">{{project.amountDone.toFixed(2)}} /</span>

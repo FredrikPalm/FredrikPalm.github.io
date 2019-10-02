@@ -120,18 +120,21 @@ app.controller('main', function($scope){
     	if(e.preventDefault) e.preventDefault();
     	window.ontouchend = window.onmouseup = function(e)
     	{
+    		if(!editingProject) return;
     		editingProject = undefined;
     		if(e.preventDefault) e.preventDefault();
     	};
 
     	window.ontouchcancel = window.onmouseleave = function(e)
     	{
+    		if(!editingProject) return;
     		editingProject = undefined;
     		if(e.preventDefault) e.preventDefault();
     	};
 
     	window.ontouchmove = window.onmousemove = function(e)
     	{
+    		if(!editingProject) return;
     		if(e.touches !== undefined)
     			e = e.touches[0];
 
@@ -175,12 +178,12 @@ app.controller('main', function($scope){
             }]).directive('ngTouchend', [function() {
                 return function(scope, element, attr) {
 
-                    element.on('touchend', function(event) {
+                    element[0].ontouchstart =  function(event) {
                     	var $event = event; 
                         scope.$apply(function() { 
                             scope.$eval(attr.myTouchend, { $event : event });
                         });
-                    });
+                    };
                 };
             }]);
 
