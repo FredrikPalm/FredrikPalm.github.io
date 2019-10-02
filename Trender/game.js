@@ -108,34 +108,40 @@ app.controller('main', function($scope){
     $scope.editAmountDone = function(project, e)
     {
     	if(editingProject) return;
+    	window.event = e;
+    	if(e.touches !== undefined)
+    		e = e.touches[0];
     	startAmount = (project.amountDone === undefined) ? 0 : project.amountDone;
     	window.scope = $scope;
     	editingProject = project;
     	console.log("Editing project " + project.name);
     	mouseStart = { x : e.clientX, y : e.clientY };
     	console.log("Mouse at " + e.clientY);
-    	e.preventDefault();
-    	window.onmouseup = function(e)
+    	if(e.preventDefault) e.preventDefault();
+    	window.ontouchend = window.onmouseup = function(e)
     	{
     		editingProject = undefined;
-    		e.preventDefault();
+    		if(e.preventDefault) e.preventDefault();
     	};
 
-    	window.onmouseleave = function(e)
+    	window.ontouchcancel = window.onmouseleave = function(e)
     	{
     		editingProject = undefined;
-    		e.preventDefault();
+    		if(e.preventDefault) e.preventDefault();
     	};
 
-    	window.onmousemove = function(e)
+    	window.ontouchmove = window.onmousemove = function(e)
     	{
+    		if(e.touches !== undefined)
+    			e = e.touches[0];
+
     		if(editingProject){
     			var change = -( mouseStart.y - e.clientY ) / 250;  //TODO
     			editingProject.amountDone = clamp(startAmount + change, 0, editingProject.duration);
     			$scope.update();
     			$scope.$apply();
 			}
-    		e.preventDefault();
+    		if(e.preventDefault) e.preventDefault();
     	};
     };
 
@@ -156,7 +162,27 @@ app.controller('main', function($scope){
         $scope.projectname = '';
         saveToStorage();
     };
-});
+}).directive('ngTouchstart', [function() {
+                return function(scope, element, attr) {
+                	window.element = element;
+                    element[0].ontouchstart = function(event) {
+                        var $event = event;
+                        scope.$apply(function() { 
+                            scope.$eval(attr.ngTouchstart, { $event : event }); 
+                        });
+                    };
+                };
+            }]).directive('ngTouchend', [function() {
+                return function(scope, element, attr) {
+
+                    element.on('touchend', function(event) {
+                    	var $event = event; 
+                        scope.$apply(function() { 
+                            scope.$eval(attr.myTouchend, { $event : event });
+                        });
+                    });
+                };
+            }]);
 
 
 function Sample(time, timeSpent)

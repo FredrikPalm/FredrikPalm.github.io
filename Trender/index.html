@@ -3,7 +3,7 @@
 
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 <link id="layout" href="layout.css" rel="stylesheet" type="text/css" />
@@ -38,7 +38,7 @@
     		</div>
     		<button class="btn" type="submit">Save</button>
     	</form>
-    	<div ng-hide="editingProject" class="completion" ng-mousedown="editAmountDone(project, $event)">
+    	<div ng-hide="editingProject" class="completion" ng-mousedown="editAmountDone(project, $event)" ng-touchstart="editAmountDone(project, $event)">
     		<span class="percentDone">{{project.percentDoneString()}}</span>
 			<span class="amountDone">{{project.amountDone.toFixed(2)}} /</span>
 			<span class="amountTotal">{{project.duration.toFixed(2)}}</span>
