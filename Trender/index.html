@@ -9,8 +9,36 @@
 <link id="layout" href="layout.css" rel="stylesheet" type="text/css" />
 
 <link href='http://fonts.googleapis.com/css?family=Alegreya+Sans+SC' rel='stylesheet' type='text/css'>
-
 <link href="https://fonts.googleapis.com/css?family=Amatic+SC" rel="stylesheet">
+
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.1.0/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/7.1.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.1.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.1.0/firebase-analytics.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyALicvtm42umELMwi0TJygh5l6afiZZ-pU",
+    authDomain: "trender-da78b.firebaseapp.com",
+    databaseURL: "https://trender-da78b.firebaseio.com",
+    projectId: "trender-da78b",
+    storageBucket: "",
+    messagingSenderId: "764419174243",
+    appId: "1:764419174243:web:b0e6794588498a80142d56",
+    measurementId: "G-DNE78V5HQT"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+</script>
+
+<script src="https://cdn.firebase.com/libs/firebaseui/4.2.0/firebaseui.js"></script>
+<link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/4.2.0/firebaseui.css" />
 
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.min.js"></script>
 <script src="https://www.chartjs.org/dist/2.8.0/Chart.min.js"></script>
@@ -21,8 +49,8 @@
 </head>
 
 <body ng-app="TrenderApp" ng-controller="main">
-<div id="wrap">
-
+<div ng-hide="authenticated" id="firebaseui-auth-container"></div>
+<div ng-show="authenticated" id="wrap">
   <!-- Begin page content -->
   <div class="container">
     <span id="Title">Trender</span>

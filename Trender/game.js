@@ -45,6 +45,92 @@ function rgb(r,g,b,a)
 	return "rgba(" + Math.round(r*255) + "," + Math.round(g*255) + "," + Math.round(b*255) + "," + a + ")";
 }
 
+// FirebaseUI config.
+var uiConfig = {
+	signInSuccessUrl: window.location.href,
+	signInOptions: [
+	  // Leave the lines as is for the providers you want to offer your users.
+	  firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+	  //firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+	  //firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+	  //firebase.auth.GithubAuthProvider.PROVIDER_ID,
+	  //firebase.auth.EmailAuthProvider.PROVIDER_ID,
+	  //firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+	  firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
+	],
+	// tosUrl and privacyPolicyUrl accept either url string or a callback
+	// function.
+	// Terms of service url/callback.
+	tosUrl: '',
+	// Privacy policy url/callback.
+	privacyPolicyUrl: function() {
+	  window.location.assign('');
+	}
+};
+
+var app = angular.module('TrenderApp', []);
+var scope;
+var useruid;
+var db;
+
+initApp = function() {
+	db = firebase.firestore();
+	firebase.auth().onAuthStateChanged(function(user) {
+	  scope.authenticated = !!user;
+	  scope.$apply();
+	  if (user) {
+	    // User is signed in.
+	    var displayName = user.displayName;
+	    var email = user.email;
+	    var emailVerified = user.emailVerified;
+	    var photoURL = user.photoURL;
+	    var uid = user.uid;
+	    useruid = user.uid;
+	    loadFromStorage();
+	    var phoneNumber = user.phoneNumber;
+	    var providerData = user.providerData;
+	    user.getIdToken().then(function(accessToken) {
+	    	/*firebase.initializeApp({
+			  apiKey: '### FIREBASE API KEY ###',
+			  authDomain: '### FIREBASE AUTH DOMAIN ###',
+			  projectId: '### CLOUD FIRESTORE PROJECT ID ###'
+			});*/
+
+		  document.getElementById('sign-in-status').textContent = 'Signed in';
+	      document.getElementById('sign-in').textContent = 'Sign out';
+	      document.getElementById('account-details').textContent = JSON.stringify({
+	        displayName: displayName,
+	        email: email,
+	        emailVerified: emailVerified,
+	        phoneNumber: phoneNumber,
+	        photoURL: photoURL,
+	        uid: uid,
+	        accessToken: accessToken,
+	        providerData: providerData
+	      }, null, '  ');
+	    });
+	  } else {
+	    // User is signed out.
+	    document.getElementById('sign-in-status').textContent = 'Signed out';
+	    document.getElementById('sign-in').textContent = 'Sign in';
+	    document.getElementById('account-details').textContent = 'null';
+	  }
+	}, function(error) {
+	  console.log(error);
+	});
+
+	// Initialize the FirebaseUI Widget using Firebase.
+	var ui = new firebaseui.auth.AuthUI(firebase.auth());
+	// The start method will wait until the DOM is loaded.
+	{
+		ui.start('#firebaseui-auth-container', uiConfig);
+	}
+
+};
+
+window.addEventListener('load', function() {
+	initApp();
+});
 
 var paused = false;
 var days = 0;
@@ -56,8 +142,6 @@ var projects = [];
 
 var chart;
 
-var app = angular.module('TrenderApp', []);
-
 function saveToStorage()
 {
 	var p = [];
@@ -66,21 +150,47 @@ function saveToStorage()
 		p.push({ name : t.name, duration : t.duration, amountDone : t.amountDone });
 	}
 
-	localStorage.setItem("projects", JSON.stringify(p));
+	db.collection("users").doc(useruid).set({
+    	projects : p
+	})
+	.then(function() {
+    	console.log("Document successfully written!");
+	})
+	.catch(function(error) {
+    	console.error("Error writing document: ", error);
+	});
+
+	//localStorage.setItem("projects", JSON.stringify(p));
 }
 
 function loadFromStorage()
 {
-	var p = localStorage.getItem("projects");
-	var pt = JSON.parse(p);
-	if(pt && pt.length){
-		for(var i = 0; i < pt.length; i++){
-			projects.push(new Project(pt[i].name, pt[i].duration, pt[i].amountDone));
-		}	
-	}
+	var docRef = db.collection("users").doc(useruid);
+	docRef.get().then(function(doc) {
+    if (doc.exists) {
+        console.log("Document data:", doc.data());
+        var pt = doc.data().projects;
+		if(pt && pt.length){
+			for(var i = 0; i < pt.length; i++){
+				projects.push(new Project(pt[i].name, pt[i].duration, pt[i].amountDone));
+			}
+			scope.$apply();
+		}
+    } else {
+        console.log("Found no data for user!");
+    }
+	}).catch(function(error) {
+    	console.log("Error getting document:", error);
+    	var p = localStorage.getItem("projects");
+		var pt = JSON.parse(p);
+		if(pt && pt.length){
+			for(var i = 0; i < pt.length; i++){
+				projects.push(new Project(pt[i].name, pt[i].duration, pt[i].amountDone));
+			}
+			scope.$apply();
+		}
+	});
 }
-
-loadFromStorage();
 
 var editingProject;
 var mouseStart = {};
@@ -94,6 +204,7 @@ function tick()
 }
 
 app.controller('main', function($scope){ 
+	window.scope = $scope;
 
     // Start as not visible but when button is tapped it will show as true 
 
@@ -201,7 +312,7 @@ function Project(name, duration, amountDone)
 	this.amountDone = (amountDone === undefined) ? 0 : amountDone;
 	this.info = {};
 	this.samples = [];
-	
+
 	var t = this;
 
 	this.getEta = function(){
